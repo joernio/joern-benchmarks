@@ -5,9 +5,9 @@ import overflowdb.schema.Property.ValueType
 
 class CpgExtSchema(builder: SchemaBuilder, cpgSchema: CpgSchema) {
 
-  private val cfgNode = cpgSchema.cfg.cfgNode
+  private val cfgNode     = cpgSchema.cfg.cfgNode
   private val findingNode = cpgSchema.finding.finding
-  
+
   val sourceNode = builder
     .addNodeType("SOURCE_NODE", comment = "A sensitive data source.")
 
@@ -16,10 +16,10 @@ class CpgExtSchema(builder: SchemaBuilder, cpgSchema: CpgSchema) {
 
   val matches = builder
     .addEdgeType("MATCHES")
-  
+
   cfgNode.addInEdge(matches, sourceNode, stepNameIn = "matchingSources", stepNameOut = "matchedNodes")
   cfgNode.addInEdge(matches, sinkNode, stepNameIn = "matchingSinks", stepNameOut = "matchedNodes")
-  
+
 }
 
 object CpgExtSchema {

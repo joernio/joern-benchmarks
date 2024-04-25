@@ -11,13 +11,11 @@ object ReplMain extends BridgeBase {
   }
 
   override protected def predefLines = {
-    Predefined.forInteractiveShell ++ Seq(
-      s"import _root_.${getClass.getPackageName}.*"
-    )
+    Predefined.forInteractiveShell ++ Seq(s"import _root_.${getClass.getPackageName}.*")
   }
 
-  override protected def promptStr = "benchmark-repl"
-  override protected def greeting = "Welcome to the benchmark REPL!"
+  override protected def promptStr  = "benchmark-repl"
+  override protected def greeting   = "Welcome to the benchmark REPL!"
   override protected def onExitCode = """println("goodbye!")"""
-  override def applicationName = "benchmarks-dataflowengineoss"
+  override def applicationName      = "benchmarks-dataflowengineoss"
 }

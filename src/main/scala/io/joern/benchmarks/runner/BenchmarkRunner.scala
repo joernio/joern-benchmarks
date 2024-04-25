@@ -2,8 +2,9 @@ package io.joern.benchmarks.runner
 
 import io.shiftleft.codepropertygraph.generated.nodes.Finding
 import better.files.File
+import io.shiftleft.codepropertygraph.generated.Cpg
 import org.slf4j.LoggerFactory
-
+import upickle.default.*
 import scala.util.{Failure, Success, Try}
 import java.net.URL
 
@@ -12,6 +13,8 @@ import java.net.URL
 trait BenchmarkRunner(datasetDir: File) {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  val benchmarkName: String
 
   /** Create and setup the benchmark if necessary.
     *
@@ -24,15 +27,15 @@ trait BenchmarkRunner(datasetDir: File) {
     * @return
     *   a list of findings, if any.
     */
-  protected def findings(testInput: File): List[Finding]
+  protected def findings(testName: String)(implicit cpg: Cpg): List[Finding]
 
   /** Compares the test expectations against the actual findings.
     * @param testName
     *   the test name, from where the expected result can be retrieved.
-    * @param findings
-    *   the actual findings after the scan.
+    * @param expectedOutcome
+    *   the expected outcome for the test.
     */
-  protected def compare(testName: String, findings: List[Finding]): TestOutcome.Value
+  protected def compare(testName: String, expectedOutcome: Boolean)(implicit cpg: Cpg): TestOutcome.Value
 
   /** The main benchmark runner entrypoint
     */
@@ -42,11 +45,14 @@ trait BenchmarkRunner(datasetDir: File) {
 
 /** The result of a benchmark.
   */
-case class Result(entries: List[TestEntry] = Nil)
+case class Result(entries: List[TestEntry] = Nil) derives ReadWriter
 
 /** A test and it's outcome.
   */
-case class TestEntry(testName: String, outcome: TestOutcome.Value)
+case class TestEntry(testName: String, outcome: TestOutcome.Value) derives ReadWriter
+
+implicit val testOutcomeRw: ReadWriter[TestOutcome.Value] =
+  readwriter[ujson.Value].bimap[TestOutcome.Value](x => ujson.Str(x.toString), json => TestOutcome.withName(json.str))
 
 object TestOutcome extends Enumeration {
 

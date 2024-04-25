@@ -33,7 +33,7 @@ object Main {
       scopt.Read.reads(File.apply(_))
 
     head("joern-benchmark", ManifestVersionProvider().getVersion)
-    
+
     note("A benchmarking suite for Joern")
     help('h', "help")
     version("version").text("Prints the version")
@@ -55,9 +55,7 @@ object Main {
         c.copy(outputFile = Option(x))
       }
     opt[OutputFormat.Value]('f', "format")
-      .text(
-        s"The output format to write results as. Default is markdown. Available [${OutputFormat.values.mkString(",")}]"
-      )
+      .text(s"The output format to write results as. Default is JSON. Available [${OutputFormat.values.mkString(",")}]")
       .action((x, c) => c.copy(outputFormat = x))
   }
 
