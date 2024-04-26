@@ -49,10 +49,10 @@ object Main {
         c.copy(datasetDir = x)
       }
     opt[File]('o', "output")
-      .text("The output file to write results to. Default is printing to stdout.")
+      .text("The output directory to write results to. Default is `./results`.")
       .action { (x, c) =>
-        if (x.exists) logger.warn(s"Output file $x exists, will overwrite.")
-        c.copy(outputFile = Option(x))
+        x.createDirectoryIfNotExists(createParents = true)
+        c.copy(outputDir = x)
       }
     opt[OutputFormat.Value]('f', "format")
       .text(s"The output format to write results as. Default is JSON. Available [${OutputFormat.values.mkString(",")}]")

@@ -18,7 +18,7 @@ import java.net.{HttpURLConnection, URI, URL}
 import scala.util.{Failure, Success, Try, Using}
 import scala.xml.XML
 
-class OWASPJavaV1_2Runner(datasetDir: File)
+class OWASPJavaRunner(datasetDir: File)
     extends BenchmarkRunner(datasetDir)
     with ArchiveDownloader
     with JavaSrcCpgCreator {

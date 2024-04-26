@@ -1,7 +1,8 @@
 package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
-import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaV1_2Runner, SecuribenchMicroRunner}
+import io.joern.benchmarks.formatting.formatterConstructors
+import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaRunner, SecuribenchMicroRunner}
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
 import org.slf4j.LoggerFactory
@@ -20,11 +21,19 @@ class Benchmark(config: BenchmarkConfig) {
 
     def runBenchmark(benchmarkRunnerCreator: BenchmarkConfig => BenchmarkRunner): Unit = {
       val benchmarkRunner = benchmarkRunnerCreator(config)
-      logger.info(s"Running ${benchmarkRunner.benchmarkName}")
+      val benchmarkName   = benchmarkRunner.benchmarkName
+      logger.info(s"Running $benchmarkName")
       benchmarkRunner.run() match {
-        case Result(Nil) => logger.warn(s"Empty results for ${benchmarkRunner.benchmarkName}")
-        case x =>
-          println(write(x, indent = 2))
+        case Result(Nil) => logger.warn(s"Empty results for $benchmarkName")
+        case result =>
+          formatterConstructors
+            .get(config.outputFormat)
+            .foreach(
+              _.apply(result)
+                .writeTo(
+                  config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
+                )
+            )
       }
     }
 
@@ -40,7 +49,7 @@ class Benchmark(config: BenchmarkConfig) {
 object Benchmark {
 
   val benchmarkConstructors: Map[AvailableBenchmarks.Value, BenchmarkConfig => BenchmarkRunner] = Map(
-    (AvailableBenchmarks.OWASP_JAVA_1_2, x => new OWASPJavaV1_2Runner(x.datasetDir)),
+    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaRunner(x.datasetDir)),
     (AvailableBenchmarks.SECURIBENCH_MICRO, x => new SecuribenchMicroRunner(x.datasetDir))
   )
 

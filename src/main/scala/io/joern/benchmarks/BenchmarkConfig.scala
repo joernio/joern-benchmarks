@@ -5,16 +5,18 @@ import better.files.File
 case class BenchmarkConfig(
   benchmark: AvailableBenchmarks.Value = AvailableBenchmarks.ALL,
   datasetDir: File = File("workspace"),
-  outputFile: Option[File] = None,
-  outputFormat: OutputFormat.Value = OutputFormat.Json
+  outputDir: File = File("results"),
+  outputFormat: OutputFormat.Value = OutputFormat.JSON
 )
 
 object AvailableBenchmarks extends Enumeration {
   val ALL               = Value
-  val OWASP_JAVA_1_2    = Value
+  val OWASP_JAVA        = Value
   val SECURIBENCH_MICRO = Value
 }
 
 object OutputFormat extends Enumeration {
-  val Json = Value
+  val JSON = Value
+  val CSV  = Value
+  val MD   = Value
 }
