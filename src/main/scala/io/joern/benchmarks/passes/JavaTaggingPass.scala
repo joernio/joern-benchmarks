@@ -28,7 +28,8 @@ class JavaTaggingPass(cpg: Cpg)(implicit resolver: ICallResolver = NoResolve) ex
   }
 
   private def sinks: Iterator[CfgNode] = {
-    cpg.method.fullName("java\\.io\\.File(?:Writer)?\\.(?:<init>|write).*").parameter.argument
+    cpg.method.fullName("java\\.io\\.File(?:Writer)?\\.(?:<init>|write).*").parameter.argument ++
+      cpg.method.fullName("java\\.io\\.PrintWriter\\.(?:println|print).*").parameter.argument
   }
 
 }
