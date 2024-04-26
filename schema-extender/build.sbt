@@ -1,4 +1,4 @@
-name := "standalone-schema-extender"
+name := "joern-benchmarks-schema-extender"
 
 val joernInstallPath = settingKey[File]("path to joern installation")
 // joernInstallPath := Path.userHome / "bin/joern/joern-cli"

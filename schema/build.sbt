@@ -1,4 +1,4 @@
-name := "standalone-schema"
+name := "joern-benchmarks-schema"
 
 libraryDependencies += "io.shiftleft" %% "overflowdb-codegen" % "2.104"
 libraryDependencies += "io.shiftleft" %% "codepropertygraph-schema" % Versions.cpg

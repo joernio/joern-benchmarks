@@ -1,7 +1,9 @@
 package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
-import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaV1_2Runner, Result, TestOutcome}
+import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaV1_2Runner, SecuribenchMicroRunner}
+import org.slf4j.LoggerFactory
+import io.joern.benchmarks.Domain.*
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -38,7 +40,8 @@ class Benchmark(config: BenchmarkConfig) {
 object Benchmark {
 
   val benchmarkConstructors: Map[AvailableBenchmarks.Value, BenchmarkConfig => BenchmarkRunner] = Map(
-    (AvailableBenchmarks.OWASP_JAVA_1_2, x => new OWASPJavaV1_2Runner(x.datasetDir))
+    (AvailableBenchmarks.OWASP_JAVA_1_2, x => new OWASPJavaV1_2Runner(x.datasetDir)),
+    (AvailableBenchmarks.SECURIBENCH_MICRO, x => new SecuribenchMicroRunner(x.datasetDir))
   )
 
 }

@@ -39,7 +39,7 @@ object Main {
     version("version").text("Prints the version")
 
     arg[AvailableBenchmarks.Value]("benchmark")
-      .text(s"The benchmark to run. Default is `ALL`. Available [${AvailableBenchmarks.values.mkString(",")}]")
+      .text(s"The benchmark to run. Available [${AvailableBenchmarks.values.mkString(",")}]")
       .required()
       .action((x, c) => c.copy(benchmark = x))
     opt[File]('d', "dataset-dir")

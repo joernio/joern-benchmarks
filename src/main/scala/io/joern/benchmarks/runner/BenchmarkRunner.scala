@@ -1,16 +1,17 @@
 package io.joern.benchmarks.runner
 
-import io.shiftleft.codepropertygraph.generated.nodes.Finding
 import better.files.File
+import io.joern.benchmarks.Domain.*
 import io.shiftleft.codepropertygraph.generated.Cpg
+import io.shiftleft.codepropertygraph.generated.nodes.Finding
 import org.slf4j.LoggerFactory
-import upickle.default.*
-import scala.util.{Failure, Success, Try}
+
 import java.net.URL
+import scala.util.{Failure, Success, Try}
 
 /** A process that runs a benchmark.
   */
-trait BenchmarkRunner(datasetDir: File) {
+trait BenchmarkRunner(protected val datasetDir: File) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -32,44 +33,20 @@ trait BenchmarkRunner(datasetDir: File) {
   /** Compares the test expectations against the actual findings.
     * @param testName
     *   the test name, from where the expected result can be retrieved.
-    * @param expectedOutcome
+    * @param flowExists
     *   the expected outcome for the test.
     */
-  protected def compare(testName: String, expectedOutcome: Boolean)(implicit cpg: Cpg): TestOutcome.Value
+  protected def compare(testName: String, flowExists: Boolean)(implicit cpg: Cpg): TestOutcome.Value = {
+    findings(testName) match {
+      case Nil if flowExists => TestOutcome.FN
+      case Nil               => TestOutcome.TN
+      case xs if flowExists  => TestOutcome.TP
+      case _                 => TestOutcome.FP
+    }
+  }
 
   /** The main benchmark runner entrypoint
     */
   def run(): Result
-
-}
-
-/** The result of a benchmark.
-  */
-case class Result(entries: List[TestEntry] = Nil) derives ReadWriter
-
-/** A test and it's outcome.
-  */
-case class TestEntry(testName: String, outcome: TestOutcome.Value) derives ReadWriter
-
-implicit val testOutcomeRw: ReadWriter[TestOutcome.Value] =
-  readwriter[ujson.Value].bimap[TestOutcome.Value](x => ujson.Str(x.toString), json => TestOutcome.withName(json.str))
-
-object TestOutcome extends Enumeration {
-
-  /** False positive
-    */
-  val FP = Value
-
-  /** True positive
-    */
-  val TP = Value
-
-  /** True negative
-    */
-  val TN = Value
-
-  /** False negative
-    */
-  val FN = Value
 
 }
