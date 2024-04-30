@@ -30,7 +30,3 @@ frontend (JVM bytecode).
 |---------------------|--------|
 | `OWASP`             | WIP    |
 | `SECURIBENCH_MICRO` | WIP    |
-
-## Requirements
-
-* Securibench Micro Requires `Ant` in order to build classes for JVM bytecode frontend tests.
