@@ -11,6 +11,7 @@ trait CpgCreator {
 
   protected def extraSemantics: List[FlowSemantic] = Nil
 
-  protected def F = (x: String, y: List[(Int, Int)]) => FlowSemantic.from(x, y)
+  protected def F: (String, List[(Int, Int)]) => FlowSemantic = (x: String, y: List[(Int, Int)]) =>
+    FlowSemantic.from(x, y)
 
 }

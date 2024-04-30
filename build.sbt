@@ -4,7 +4,7 @@ ThisBuild / scalaVersion := "3.4.1"
 
 // parsed by project/Versions.scala, updated by updateDependencies.sh
 val cpgVersion        = "1.6.11"
-val joernVersion      = "2.0.343"
+val joernVersion      = "2.0.348"
 val overflowdbVersion = "1.192"
 
 lazy val schema         = Projects.schema
@@ -19,6 +19,7 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-slf4j2-impl" % Versions.log4j % Optional,
   "io.joern"                %% "x2cpg"             % Versions.joern,
   "io.joern"                %% "javasrc2cpg"       % Versions.joern,
+  "io.joern"                %% "jimple2cpg"        % Versions.joern,
   "io.joern"                %% "jssrc2cpg"         % Versions.joern,
   "io.joern"                %% "joern-cli"         % Versions.joern,
   "io.joern"                %% "semanticcpg"       % Versions.joern,

@@ -3,7 +3,7 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.Domain.*
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.Finding
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
 import org.slf4j.LoggerFactory
 
 import java.net.URL
@@ -50,3 +50,15 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   def run(): Result
 
 }
+
+/** Used to specify benchmark-specific sources and sinks.
+  */
+trait BenchmarkSourcesAndSinks {
+
+  def sources: Iterator[CfgNode] = Iterator.empty
+
+  def sinks: Iterator[CfgNode] = Iterator.empty
+
+}
+
+class DefaultBenchmarkSourcesAndSinks extends BenchmarkSourcesAndSinks

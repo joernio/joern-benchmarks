@@ -4,9 +4,9 @@ import java.net.{HttpURLConnection, URL}
 import better.files.File
 
 import java.io.FileOutputStream
-import scala.util.{Try, Using}
+import scala.util.{Try, Success, Failure, Using}
 
-trait ArchiveDownloader { this: BenchmarkRunner =>
+trait FileDownloader { this: BenchmarkRunner =>
 
   /** The URL to the archive.
     */
@@ -20,27 +20,45 @@ trait ArchiveDownloader { this: BenchmarkRunner =>
     */
   protected val benchmarkBaseDir: File
 
-  /** Downloads the archive an unpacks it to the `benchmarkBaseDir`. Note: Only ZIP archives are currently supported.
+  protected def downloadBenchmarkAndUnzip: Try[File] = Try {
+    downloadBenchmark(Option(".zip")) match {
+      case Success(f) =>
+        f.unzipTo(datasetDir)
+        f.delete(swallowIOExceptions = true)
+      case Failure(e) => throw e
+    }
+    benchmarkBaseDir
+  }
+
+  /** Downloads the archive an unpacks it to the `benchmarkBaseDir`.
+    * @param ext
+    *   and optional extension for the downloaded file. Must include the dot.
     * @return
-    *   `benchmarkBaseDir` if the operation was successful. A failure if otherwise.
+    *   The downloaded file if the operation was successful. A failure if otherwise.
     */
-  def downloadBenchmark: Try[File] = Try {
+  protected def downloadBenchmark(ext: Option[String] = None): Try[File] = Try {
+    val targetFile = datasetDir / s"$benchmarkFileName${ext.getOrElse("")}"
     if (!benchmarkBaseDir.exists || benchmarkBaseDir.list.forall(_.isDirectory)) {
       benchmarkBaseDir.createDirectoryIfNotExists(createParents = true)
+      downloadFile(benchmarkUrl, targetFile)
+    }
+    targetFile
+  }
+
+  protected def downloadFile(url: URL, destFile: File): Unit = {
+    if (destFile.notExists) {
       var connection: Option[HttpURLConnection] = None
-      val targetFile                            = datasetDir / s"$benchmarkFileName.zip"
       try {
         connection = Option(benchmarkUrl.openConnection().asInstanceOf[HttpURLConnection])
         connection.foreach {
           case conn if conn.getResponseCode == HttpURLConnection.HTTP_OK =>
-            Using.resources(conn.getInputStream, new FileOutputStream(targetFile.pathAsString)) { (is, fos) =>
+            Using.resources(conn.getInputStream, new FileOutputStream(destFile.pathAsString)) { (is, fos) =>
               val buffer = new Array[Byte](4096)
               Iterator
                 .continually(is.read(buffer))
                 .takeWhile(_ != -1)
                 .foreach(bytesRead => fos.write(buffer, 0, bytesRead))
             }
-            targetFile.unzipTo(datasetDir)
           case conn =>
             throw new RuntimeException(
               s"Unable to download $benchmarkName from $benchmarkUrl. Status code ${conn.getResponseCode}"
@@ -48,10 +66,8 @@ trait ArchiveDownloader { this: BenchmarkRunner =>
         }
       } finally {
         connection.foreach(_.disconnect())
-        targetFile.delete(swallowIOExceptions = true)
       }
     }
-    benchmarkBaseDir
   }
 
 }

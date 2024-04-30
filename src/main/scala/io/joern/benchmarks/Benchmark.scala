@@ -5,6 +5,7 @@ import io.joern.benchmarks.formatting.formatterConstructors
 import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaRunner, SecuribenchMicroRunner}
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
+import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -49,8 +50,10 @@ class Benchmark(config: BenchmarkConfig) {
 object Benchmark {
 
   val benchmarkConstructors: Map[AvailableBenchmarks.Value, BenchmarkConfig => BenchmarkRunner] = Map(
-    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaRunner(x.datasetDir)),
-    (AvailableBenchmarks.SECURIBENCH_MICRO, x => new SecuribenchMicroRunner(x.datasetDir))
+    (AvailableBenchmarks.OWASP_JAVASRC, x => new OWASPJavaRunner(x.datasetDir, JavaSrcCpgCreator())),
+    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaRunner(x.datasetDir, JVMBytecodeCpgCreator())),
+    (AvailableBenchmarks.SECURIBENCH_MICRO_JAVASRC, x => new SecuribenchMicroRunner(x.datasetDir, JavaSrcCpgCreator())),
+    (AvailableBenchmarks.SECURIBENCH_MICRO_JAVA, x => new SecuribenchMicroRunner(x.datasetDir, JVMBytecodeCpgCreator()))
   )
 
 }

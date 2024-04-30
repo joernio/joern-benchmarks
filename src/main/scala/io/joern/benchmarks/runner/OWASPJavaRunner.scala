@@ -3,10 +3,11 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.JavaSrcCpgCreator
+import io.joern.benchmarks.cpggen.{JavaCpgCreator, JavaSrcCpgCreator}
 import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
+import io.joern.x2cpg.X2CpgFrontend
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.Finding
 import io.shiftleft.semanticcpg.language.*
@@ -18,14 +19,13 @@ import java.net.{HttpURLConnection, URI, URL}
 import scala.util.{Failure, Success, Try, Using}
 import scala.xml.XML
 
-class OWASPJavaRunner(datasetDir: File)
+class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
-    with ArchiveDownloader
-    with JavaSrcCpgCreator {
+    with FileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override val benchmarkName = "OWASP Java v1.2"
+  override val benchmarkName = s"OWASP Java v1.2 ${cpgCreator.frontend}"
 
   override protected val benchmarkUrl: URL = URI(
     "https://github.com/OWASP-Benchmark/BenchmarkJava/archive/refs/tags/1.2beta.zip"
@@ -33,7 +33,9 @@ class OWASPJavaRunner(datasetDir: File)
   override protected val benchmarkFileName: String = "BenchmarkJava-1.2beta"
   override protected val benchmarkBaseDir: File    = datasetDir / benchmarkFileName
 
-  override def initialize(): Try[File] = downloadBenchmark
+  private val apacheJdo = URI("https://repo1.maven.org/maven2/javax/jdo/jdo-api/3.1/jdo-api-3.1.jar").toURL
+
+  override def initialize(): Try[File] = downloadBenchmarkAndUnzip
 
   override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
     cpg.findings.filter(_.keyValuePairs.exists(_.value.split(':').headOption.contains(testName))).l
@@ -63,19 +65,21 @@ class OWASPJavaRunner(datasetDir: File)
 
   private def runOWASP(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-    createCpg(benchmarkBaseDir) match {
+    cpgCreator.createCpg(benchmarkBaseDir) match {
       case Failure(exception) =>
         logger.error("Unable to generate CPG for OWASP benchmark")
         Result()
       case Success(cpg) =>
-        implicit val cpgImpl: Cpg = cpg
-        val testResults = expectedTestOutcomes
-          .map { case (testName, outcome) =>
-            TestEntry(testName, compare(testName, outcome))
-          }
-          .sortBy(_.testName)
-          .l
-        Result(testResults)
+        Using.resource(cpg) { cpg =>
+          implicit val cpgImpl: Cpg = cpg
+          val testResults = expectedTestOutcomes
+            .map { case (testName, outcome) =>
+              TestEntry(testName, compare(testName, outcome))
+            }
+            .sortBy(_.testName)
+            .l
+          Result(testResults)
+        }
     }
   }
 
