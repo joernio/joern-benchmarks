@@ -5,3 +5,5 @@ target/
 /joern-inst
 /workspace
 /results
+/bin
+.local

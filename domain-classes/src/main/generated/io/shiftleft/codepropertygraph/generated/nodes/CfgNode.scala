@@ -23,8 +23,7 @@ object CfgNode {
 
   object Edges {
     val Out: Array[String] = Array()
-    val In: Array[String] =
-      Array("CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "MATCHES", "MATCHES")
+    val In: Array[String]  = Array("CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG", "CFG")
   }
 
 }
@@ -131,17 +130,5 @@ trait CfgNode extends StoredNode with CfgNodeBase with AstNode {
     */
   def _unknownViaCfgIn: overflowdb.traversal.Traversal[Unknown] =
     cfgIn.collectAll[Unknown]
-
-  def matchesIn: Iterator[? <: StoredNode]
-
-  /** Traverse to SINK_NODE via MATCHES IN edge.
-    */
-  def matchingSinks: overflowdb.traversal.Traversal[SinkNode] =
-    matchesIn.collectAll[SinkNode]
-
-  /** Traverse to SOURCE_NODE via MATCHES IN edge.
-    */
-  def matchingSources: overflowdb.traversal.Traversal[SourceNode] =
-    matchesIn.collectAll[SourceNode]
 
 }

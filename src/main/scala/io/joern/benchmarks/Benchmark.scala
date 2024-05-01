@@ -2,10 +2,10 @@ package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
 import io.joern.benchmarks.formatting.formatterConstructors
-import io.joern.benchmarks.runner.{BenchmarkRunner, OWASPJavaRunner, SecuribenchMicroRunner}
+import io.joern.benchmarks.runner.{BenchmarkRunner, IchnaeaRunner, OWASPJavaRunner, SecuribenchMicroRunner}
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator}
+import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -53,7 +53,11 @@ object Benchmark {
     (AvailableBenchmarks.OWASP_JAVASRC, x => new OWASPJavaRunner(x.datasetDir, JavaSrcCpgCreator())),
     (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaRunner(x.datasetDir, JVMBytecodeCpgCreator())),
     (AvailableBenchmarks.SECURIBENCH_MICRO_JAVASRC, x => new SecuribenchMicroRunner(x.datasetDir, JavaSrcCpgCreator())),
-    (AvailableBenchmarks.SECURIBENCH_MICRO_JAVA, x => new SecuribenchMicroRunner(x.datasetDir, JVMBytecodeCpgCreator()))
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JAVA,
+      x => new SecuribenchMicroRunner(x.datasetDir, JVMBytecodeCpgCreator())
+    ),
+    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaRunner(x.datasetDir, JsSrcCpgCreator()))
   )
 
 }

@@ -2,11 +2,13 @@ package io.joern.benchmarks
 
 import upickle.default.*
 
+import scala.annotation.targetName
+
 object Domain {
 
   implicit val resultRw: ReadWriter[Result] =
     readwriter[ujson.Value].bimap[Result](
-      x => ujson.Obj("entries" -> write[List[TestEntry]](x.entries), "youdenIndex" -> x.youdenIndex),
+      x => ujson.Obj("entries" -> write[List[TestEntry]](x.entries), "youdenIndex" -> x.informedness),
       json => Result(read[List[TestEntry]](json("entries")))
     )
 
@@ -14,12 +16,25 @@ object Domain {
     */
   case class Result(entries: List[TestEntry] = Nil) {
 
-    def youdenIndex: Double = {
+    /** @return
+      *   When a benchmark tests for false/true positives/negatives, this will be the <a
+      *   href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic">Youden's index</a>. If only two dimensions are
+      *   tested, it will simply be a measure of the precision of these two (either sensitivity or specificity).
+      */
+    def informedness: Double = {
       val tp = entries.count(_.outcome == TestOutcome.TP).toDouble
       val fp = entries.count(_.outcome == TestOutcome.FP).toDouble
       val tn = entries.count(_.outcome == TestOutcome.TN).toDouble
       val fn = entries.count(_.outcome == TestOutcome.FN).toDouble
-      tp / (tp + fn) + tn / (tn + fp) - 1.0
+
+      if (tn == 0 && fp == 0) tp / (tp + fn)
+      else if (tp == 0 && fn == 0) tn / (tn + fp)
+      else tp / (tp + fn) + tn / (tn + fp) - 1.0
+    }
+
+    @targetName("appendAll")
+    def ++(o: Result): Result = {
+      copy(entries ++ o.entries)
     }
 
   }

@@ -250,12 +250,6 @@ NOT represent a formal return parameter as formal return parameters are
 represented via `METHOD_RETURN` nodes. */
 public static final String RETURN = "RETURN";
 
-/** A sensitive data sink. */
-public static final String SINK_NODE = "SINK_NODE";
-
-/** A sensitive data source. */
-public static final String SOURCE_NODE = "SOURCE_NODE";
-
 /** This node represents a tag. */
 public static final String TAG = "TAG";
 
@@ -359,8 +353,6 @@ add(MODIFIER);
 add(NAMESPACE);
 add(NAMESPACE_BLOCK);
 add(RETURN);
-add(SINK_NODE);
-add(SOURCE_NODE);
 add(TAG);
 add(TAG_NODE_PAIR);
 add(TEMPLATE_DOM);

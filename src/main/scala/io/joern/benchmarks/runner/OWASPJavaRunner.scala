@@ -3,7 +3,7 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JavaCpgCreator, JavaSrcCpgCreator}
+import io.joern.benchmarks.cpggen.{JavaCpgCreator, JsSrcCpgCreator}
 import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
@@ -21,7 +21,7 @@ import scala.xml.XML
 
 class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
-    with FileDownloader {
+    with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -35,7 +35,7 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
 
   private val apacheJdo = URI("https://repo1.maven.org/maven2/javax/jdo/jdo-api/3.1/jdo-api-3.1.jar").toURL
 
-  override def initialize(): Try[File] = downloadBenchmarkAndUnzip
+  override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
   override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
     cpg.findings.filter(_.keyValuePairs.exists(_.value.split(':').headOption.contains(testName))).l

@@ -76,9 +76,6 @@ public static final String INHERITS_FROM = "INHERITS_FROM";
 ￼        | */
 public static final String IS_CALL_FOR_IMPORT = "IS_CALL_FOR_IMPORT";
 
-
-public static final String MATCHES = "MATCHES";
-
 /** This edge connects a method input parameter to the corresponding
 method output parameter. */
 public static final String PARAMETER_LINK = "PARAMETER_LINK";
@@ -129,7 +126,6 @@ add(EVAL_TYPE);
 add(IMPORTS);
 add(INHERITS_FROM);
 add(IS_CALL_FOR_IMPORT);
-add(MATCHES);
 add(PARAMETER_LINK);
 add(POST_DOMINATE);
 add(REACHING_DEF);

@@ -1018,7 +1018,6 @@ object NewAnnotation {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -2384,7 +2383,6 @@ object NewAnnotationLiteral {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -3740,7 +3738,6 @@ object NewAnnotationParameter {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -5064,7 +5061,6 @@ object NewAnnotationParameterAssign {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -6388,7 +6384,6 @@ object NewArrayInitializer {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -7812,7 +7807,6 @@ object NewBlock {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -9190,7 +9184,6 @@ object NewCall {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -10691,7 +10684,6 @@ object NewComment {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -12093,7 +12085,6 @@ object NewControlStructure {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -13539,7 +13530,6 @@ object NewFieldIdentifier {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -14895,7 +14885,6 @@ object NewFile {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -16319,7 +16308,6 @@ object NewIdentifier {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -17707,7 +17695,6 @@ object NewImport {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -19091,7 +19078,6 @@ object NewJumpLabel {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -20435,7 +20421,6 @@ object NewJumpTarget {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -21857,7 +21842,6 @@ object NewLiteral {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -23235,7 +23219,6 @@ object NewLocal {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -24765,7 +24748,6 @@ object NewMember {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -26251,7 +26233,6 @@ object NewMethod {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -27705,7 +27686,6 @@ object NewMethodParameterIn {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -29118,7 +29098,6 @@ object NewMethodParameterOut {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -30497,7 +30476,6 @@ object NewMethodRef {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -31885,7 +31863,6 @@ object NewMethodReturn {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -33251,7 +33228,6 @@ object NewModifier {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -34585,7 +34561,6 @@ object NewNamespace {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -35919,7 +35894,6 @@ object NewNamespaceBlock {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -37273,7 +37247,6 @@ object NewReturn {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -37613,104 +37586,6 @@ class NewReturn extends NewNode with ReturnBase with ExpressionNew {
   override def productArity  = 6
 
   override def canEqual(that: Any): Boolean = that != null && that.isInstanceOf[NewReturn]
-}
-
-object NewSinkNode {
-  def apply(): NewSinkNode = new NewSinkNode
-
-  private val outNeighbors: Map[String, Set[String]] = Map("MATCHES" -> Set("CFG_NODE"))
-  private val inNeighbors: Map[String, Set[String]]  = Map()
-
-}
-
-class NewSinkNode extends NewNode with SinkNodeBase {
-  type StoredType = SinkNode
-
-  override def label: String = "SINK_NODE"
-
-  override def copy: this.type = {
-    val newInstance = new NewSinkNode
-
-    newInstance.asInstanceOf[this.type]
-  }
-
-  override def properties: Map[String, Any] = {
-    Map.empty
-  }
-
-  import NewSinkNode.{outNeighbors, inNeighbors}
-
-  override def isValidOutNeighbor(edgeLabel: String, n: NewNode): Boolean =
-    outNeighbors.getOrElse(edgeLabel, Set.empty).contains(n.label)
-
-  override def isValidInNeighbor(edgeLabel: String, n: NewNode): Boolean =
-    inNeighbors.getOrElse(edgeLabel, Set.empty).contains(n.label)
-
-  override def productElement(n: Int): Any =
-    n match {
-
-      case _ => null
-    }
-
-  override def productElementName(n: Int): String =
-    n match {
-
-      case _ => ""
-    }
-
-  override def productPrefix = "NewSinkNode"
-  override def productArity  = 0
-
-  override def canEqual(that: Any): Boolean = that != null && that.isInstanceOf[NewSinkNode]
-}
-
-object NewSourceNode {
-  def apply(): NewSourceNode = new NewSourceNode
-
-  private val outNeighbors: Map[String, Set[String]] = Map("MATCHES" -> Set("CFG_NODE"))
-  private val inNeighbors: Map[String, Set[String]]  = Map()
-
-}
-
-class NewSourceNode extends NewNode with SourceNodeBase {
-  type StoredType = SourceNode
-
-  override def label: String = "SOURCE_NODE"
-
-  override def copy: this.type = {
-    val newInstance = new NewSourceNode
-
-    newInstance.asInstanceOf[this.type]
-  }
-
-  override def properties: Map[String, Any] = {
-    Map.empty
-  }
-
-  import NewSourceNode.{outNeighbors, inNeighbors}
-
-  override def isValidOutNeighbor(edgeLabel: String, n: NewNode): Boolean =
-    outNeighbors.getOrElse(edgeLabel, Set.empty).contains(n.label)
-
-  override def isValidInNeighbor(edgeLabel: String, n: NewNode): Boolean =
-    inNeighbors.getOrElse(edgeLabel, Set.empty).contains(n.label)
-
-  override def productElement(n: Int): Any =
-    n match {
-
-      case _ => null
-    }
-
-  override def productElementName(n: Int): String =
-    n match {
-
-      case _ => ""
-    }
-
-  override def productPrefix = "NewSourceNode"
-  override def productArity  = 0
-
-  override def canEqual(that: Any): Boolean = that != null && that.isInstanceOf[NewSourceNode]
 }
 
 object NewTag {
@@ -38878,7 +38753,6 @@ object NewTemplateDom {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -40332,7 +40206,6 @@ object NewTypeArgument {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -41656,7 +41529,6 @@ object NewTypeDecl {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -43088,7 +42960,6 @@ object NewTypeParameter {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -44422,7 +44293,6 @@ object NewTypeRef {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",
@@ -45800,7 +45670,6 @@ object NewUnknown {
       "TYPE_REF",
       "UNKNOWN"
     ),
-    "MATCHES" -> Set("SINK_NODE", "SOURCE_NODE"),
     "PARAMETER_LINK" -> Set(
       "ANNOTATION",
       "ANNOTATION_LITERAL",

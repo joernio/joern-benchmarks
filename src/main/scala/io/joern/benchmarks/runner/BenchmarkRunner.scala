@@ -3,8 +3,8 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.Domain.*
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
-import org.slf4j.LoggerFactory
+import io.shiftleft.codepropertygraph.generated.nodes.{AstNode, CfgNode, Finding}
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.net.URL
 import scala.util.{Failure, Success, Try}
@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
   */
 trait BenchmarkRunner(protected val datasetDir: File) {
 
-  private val logger = LoggerFactory.getLogger(getClass)
+  protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val benchmarkName: String
 
@@ -58,6 +58,8 @@ trait BenchmarkSourcesAndSinks {
   def sources: Iterator[CfgNode] = Iterator.empty
 
   def sinks: Iterator[CfgNode] = Iterator.empty
+
+  def sanitizers: Iterator[CfgNode] = Iterator.empty
 
 }
 

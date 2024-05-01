@@ -57,7 +57,6 @@ object MethodParameterOut {
     List(
       io.shiftleft.codepropertygraph.generated.edges.Ast.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ParameterLink.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
@@ -65,7 +64,7 @@ object MethodParameterOut {
 
   object Edges {
     val Out: Array[String] = Array("EVAL_TYPE", "REACHING_DEF", "TAGGED_BY")
-    val In: Array[String]  = Array("AST", "CFG", "MATCHES", "PARAMETER_LINK", "REACHING_DEF")
+    val In: Array[String]  = Array("AST", "CFG", "PARAMETER_LINK", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[MethodParameterOutDb] {
@@ -174,9 +173,6 @@ class MethodParameterOut(graph_4762: Graph, id_4762: Long /*cf https://github.co
 
   def cfgIn: Iterator[CfgNode] = get().cfgIn
   override def _cfgIn          = get()._cfgIn
-
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
 
   def parameterLinkIn: Iterator[MethodParameterIn] = get().parameterLinkIn
   override def _parameterLinkIn                    = get()._parameterLinkIn
@@ -375,15 +371,12 @@ class MethodParameterOutDb(ref: NodeRef[NodeDb])
   def cfgIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](4)
   override def _cfgIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](4)
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
-
-  def parameterLinkIn: Iterator[MethodParameterIn] = createAdjacentNodeScalaIteratorByOffSet[MethodParameterIn](6)
-  override def _parameterLinkIn                    = createAdjacentNodeScalaIteratorByOffSet[StoredNode](6)
+  def parameterLinkIn: Iterator[MethodParameterIn] = createAdjacentNodeScalaIteratorByOffSet[MethodParameterIn](5)
+  override def _parameterLinkIn                    = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
   def asInput: overflowdb.traversal.Traversal[MethodParameterIn] = parameterLinkIn.collectAll[MethodParameterIn]
 
-  def reachingDefIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](7)
-  override def _reachingDefIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](7)
+  def reachingDefIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](6)
+  override def _reachingDefIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](6)
   def _blockViaReachingDefIn: overflowdb.traversal.Traversal[Block] = reachingDefIn.collectAll[Block]
   def _callViaReachingDefIn: overflowdb.traversal.Traversal[Call]   = reachingDefIn.collectAll[Call]
   def _controlStructureViaReachingDefIn: overflowdb.traversal.Traversal[ControlStructure] =

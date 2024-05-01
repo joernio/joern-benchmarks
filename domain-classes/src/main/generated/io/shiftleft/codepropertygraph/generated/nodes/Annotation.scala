@@ -51,14 +51,13 @@ object Annotation {
     List(
       io.shiftleft.codepropertygraph.generated.edges.Ast.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
   )
 
   object Edges {
     val Out: Array[String] = Array("ARGUMENT", "AST")
-    val In: Array[String]  = Array("AST", "CFG", "MATCHES", "REACHING_DEF")
+    val In: Array[String]  = Array("AST", "CFG", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[AnnotationDb] {
@@ -162,9 +161,6 @@ class Annotation(graph_4762: Graph, id_4762: Long /*cf https://github.com/scala/
 
   def cfgIn: Iterator[CfgNode] = get().cfgIn
   override def _cfgIn          = get()._cfgIn
-
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
 
   def reachingDefIn: Iterator[TemplateDom] = get().reachingDefIn
   override def _reachingDefIn              = get()._reachingDefIn
@@ -293,11 +289,8 @@ class AnnotationDb(ref: NodeRef[NodeDb]) extends NodeDb(ref) with StoredNode wit
   def cfgIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](3)
   override def _cfgIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](3)
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](4)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](4)
-
-  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](5)
-  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
+  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](4)
+  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](4)
 
   override def label: String = {
     Annotation.Label

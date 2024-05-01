@@ -56,7 +56,6 @@ object FieldIdentifier {
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Contains.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Dominate.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.PostDominate.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
@@ -65,7 +64,7 @@ object FieldIdentifier {
   object Edges {
     val Out: Array[String] = Array("ARGUMENT", "CDG", "CFG", "DOMINATE", "POST_DOMINATE", "TAGGED_BY")
     val In: Array[String] =
-      Array("ARGUMENT", "AST", "CDG", "CFG", "CONTAINS", "DOMINATE", "MATCHES", "POST_DOMINATE", "REACHING_DEF")
+      Array("ARGUMENT", "AST", "CDG", "CFG", "CONTAINS", "DOMINATE", "POST_DOMINATE", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[FieldIdentifierDb] {
@@ -415,9 +414,6 @@ class FieldIdentifier(graph_4762: Graph, id_4762: Long /*cf https://github.com/s
     */
   def _unknownViaDominateIn: overflowdb.traversal.Traversal[Unknown] = get()._unknownViaDominateIn
 
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
-
   def postDominateIn: Iterator[CfgNode] = get().postDominateIn
   override def _postDominateIn          = get()._postDominateIn
 
@@ -692,11 +688,8 @@ class FieldIdentifierDb(ref: NodeRef[NodeDb])
   def _typeRefViaDominateIn: overflowdb.traversal.Traversal[TypeRef]       = dominateIn.collectAll[TypeRef]
   def _unknownViaDominateIn: overflowdb.traversal.Traversal[Unknown]       = dominateIn.collectAll[Unknown]
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](12)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](12)
-
-  def postDominateIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](13)
-  override def _postDominateIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](13)
+  def postDominateIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](12)
+  override def _postDominateIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](12)
   def _blockViaPostDominateIn: overflowdb.traversal.Traversal[Block] = postDominateIn.collectAll[Block]
   def _callViaPostDominateIn: overflowdb.traversal.Traversal[Call]   = postDominateIn.collectAll[Call]
   def _controlStructureViaPostDominateIn: overflowdb.traversal.Traversal[ControlStructure] =
@@ -713,8 +706,8 @@ class FieldIdentifierDb(ref: NodeRef[NodeDb])
   def _typeRefViaPostDominateIn: overflowdb.traversal.Traversal[TypeRef] = postDominateIn.collectAll[TypeRef]
   def _unknownViaPostDominateIn: overflowdb.traversal.Traversal[Unknown] = postDominateIn.collectAll[Unknown]
 
-  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](14)
-  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](14)
+  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](13)
+  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](13)
 
   override def label: String = {
     FieldIdentifier.Label

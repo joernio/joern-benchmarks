@@ -52,14 +52,13 @@ object TemplateDom {
       io.shiftleft.codepropertygraph.generated.edges.Ast.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Contains.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
   )
 
   object Edges {
     val Out: Array[String] = Array("ARGUMENT", "AST", "REACHING_DEF", "TAGGED_BY")
-    val In: Array[String]  = Array("ARGUMENT", "AST", "CFG", "CONTAINS", "MATCHES", "REACHING_DEF")
+    val In: Array[String]  = Array("ARGUMENT", "AST", "CFG", "CONTAINS", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[TemplateDomDb] {
@@ -154,9 +153,6 @@ class TemplateDom(graph_4762: Graph, id_4762: Long /*cf https://github.com/scala
   /** Traverse to METHOD via CONTAINS IN edge.
     */
   def _methodViaContainsIn: overflowdb.traversal.Traversal[Method] = get()._methodViaContainsIn
-
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
 
   def reachingDefIn: Iterator[TemplateDom] = get().reachingDefIn
   override def _reachingDefIn              = get()._reachingDefIn
@@ -283,11 +279,8 @@ class TemplateDomDb(ref: NodeRef[NodeDb]) extends NodeDb(ref) with StoredNode wi
   def _fileViaContainsIn: overflowdb.traversal.Traversal[File] = containsIn.collectAll[File]
   def _methodViaContainsIn: overflowdb.traversal.Traversal[Method] = containsIn.collectAll[Method]
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
-
-  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](9)
-  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](9)
+  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](8)
+  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
 
   override def label: String = {
     TemplateDom.Label

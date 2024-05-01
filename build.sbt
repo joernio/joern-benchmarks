@@ -17,6 +17,8 @@ libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % Versions.betterFiles,
   "com.github.scopt"        %% "scopt"             % Versions.scopt,
   "org.apache.logging.log4j" % "log4j-slf4j2-impl" % Versions.log4j % Optional,
+  "com.lihaoyi"             %% "requests"          % Versions.requests,
+  "com.lihaoyi"             %% "upickle"           % Versions.upickle,
   "io.joern"                %% "x2cpg"             % Versions.joern,
   "io.joern"                %% "javasrc2cpg"       % Versions.joern,
   "io.joern"                %% "jimple2cpg"        % Versions.joern,
@@ -26,6 +28,43 @@ libraryDependencies ++= Seq(
   "io.joern"                %% "dataflowengineoss" % Versions.joern,
   "io.joern"                %% "semanticcpg"       % Versions.joern % Test classifier "tests"
 )
+
+/**
+ * AST Gen Settings
+ */
+
+lazy val jsAstGenDlUrl = settingKey[String]("JavaScript astgen download url")
+jsAstGenDlUrl := s"https://github.com/joernio/astgen/releases/download/v${Versions.jsAstGen}/"
+
+lazy val jsAstGenDlTask = taskKey[Unit](s"Download JavaScript astgen binaries")
+jsAstGenDlTask := {
+  val astGenDir = baseDirectory.value / "bin" / "astgen"
+  lazy val AstgenWin    = "astgen-win.exe"
+  lazy val AstgenLinux  = "astgen-linux"
+  lazy val AstgenMac    = "astgen-macos"
+  lazy val AstgenMacArm = "astgen-macos-arm"
+  Seq(AstgenWin, AstgenLinux, AstgenMac, AstgenMacArm).foreach { fileName =>
+    DownloadHelper.ensureIsAvailable(s"${jsAstGenDlUrl.value}$fileName", astGenDir / fileName)
+  }
+
+  val distDir = (Universal / stagingDirectory).value / "bin" / "astgen"
+  distDir.mkdirs()
+  IO.copyDirectory(astGenDir, distDir)
+
+  // permissions are lost during the download; need to set them manually
+  astGenDir.listFiles().foreach(_.setExecutable(true, false))
+  distDir.listFiles().foreach(_.setExecutable(true, false))
+}
+
+Compile / compile := ((Compile / compile) dependsOn jsAstGenDlTask).value
+
+lazy val astGenSetAllPlatforms = taskKey[Unit](s"Set ALL_PLATFORMS")
+astGenSetAllPlatforms := { System.setProperty("ALL_PLATFORMS", "TRUE") }
+
+stage := Def
+  .sequential(astGenSetAllPlatforms, Universal / stage)
+  .andFinally(System.setProperty("ALL_PLATFORMS", "FALSE"))
+  .value
 
 // mostly so that `sbt assembly` works, but also to ensure that we don't end up
 // with unexpected shadowing in jar hell

@@ -3,7 +3,7 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JavaSrcCpgCreator}
+import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JsSrcCpgCreator}
 import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
@@ -23,7 +23,7 @@ import scala.xml.XML
 
 class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
-    with FileDownloader {
+    with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -38,7 +38,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   private val apacheJdo = URI("https://repo1.maven.org/maven2/javax/jdo/jdo-api/3.1/jdo-api-3.1.jar").toURL
 
   override def initialize(): Try[File] = Try {
-    downloadBenchmarkAndUnzip
+    downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
     downloadFile(apacheJdo, benchmarkBaseDir / "lib" / "jdo-api-3.1.jar")
     if (
       cpgCreator.isInstanceOf[JVMBytecodeCpgCreator] && (benchmarkBaseDir / "classes")
@@ -117,7 +117,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   private def runSecuribenchMicro(): Result = {
     val inputDir = cpgCreator match {
       case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
-      case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
+      case creator: JsSrcCpgCreator       => benchmarkBaseDir / "src"
     }
     cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
       case Failure(exception) =>

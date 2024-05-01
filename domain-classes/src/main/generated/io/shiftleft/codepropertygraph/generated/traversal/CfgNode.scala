@@ -6,16 +6,6 @@ import io.shiftleft.codepropertygraph.generated.nodes._
 /** Traversal steps for CfgNode */
 class CfgNodeTraversalExtGen[NodeType <: CfgNode](val traversal: Iterator[NodeType]) extends AnyVal {
 
-  /** Traverse to SINK_NODE via MATCHES IN edge.
-    */
-  def matchingSinks: Iterator[SinkNode] =
-    traversal.flatMap(_.matchingSinks)
-
-  /** Traverse to SOURCE_NODE via MATCHES IN edge.
-    */
-  def matchingSources: Iterator[SourceNode] =
-    traversal.flatMap(_.matchingSources)
-
   /** Traverse to code property */
   def code: Iterator[String] =
     traversal.map(_.code)

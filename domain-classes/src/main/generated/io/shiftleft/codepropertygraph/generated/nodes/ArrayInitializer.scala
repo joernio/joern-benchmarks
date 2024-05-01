@@ -46,14 +46,13 @@ object ArrayInitializer {
     List(
       io.shiftleft.codepropertygraph.generated.edges.Ast.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
   )
 
   object Edges {
     val Out: Array[String] = Array("ARGUMENT", "AST", "EVAL_TYPE")
-    val In: Array[String]  = Array("AST", "CFG", "MATCHES", "REACHING_DEF")
+    val In: Array[String]  = Array("AST", "CFG", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[ArrayInitializerDb] {
@@ -126,9 +125,6 @@ class ArrayInitializer(graph_4762: Graph, id_4762: Long /*cf https://github.com/
 
   def cfgIn: Iterator[CfgNode] = get().cfgIn
   override def _cfgIn          = get()._cfgIn
-
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
 
   def reachingDefIn: Iterator[TemplateDom] = get().reachingDefIn
   override def _reachingDefIn              = get()._reachingDefIn
@@ -243,11 +239,8 @@ class ArrayInitializerDb(ref: NodeRef[NodeDb])
   def cfgIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](4)
   override def _cfgIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](4)
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
-
-  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](6)
-  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](6)
+  def reachingDefIn: Iterator[TemplateDom] = createAdjacentNodeScalaIteratorByOffSet[TemplateDom](5)
+  override def _reachingDefIn              = createAdjacentNodeScalaIteratorByOffSet[StoredNode](5)
 
   override def label: String = {
     ArrayInitializer.Label

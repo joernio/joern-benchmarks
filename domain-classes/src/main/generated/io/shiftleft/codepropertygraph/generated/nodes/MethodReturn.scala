@@ -62,14 +62,13 @@ object MethodReturn {
       io.shiftleft.codepropertygraph.generated.edges.Cdg.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Dominate.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation
     ).asJava
   )
 
   object Edges {
     val Out: Array[String] = Array("EVAL_TYPE", "POST_DOMINATE", "TAGGED_BY")
-    val In: Array[String]  = Array("AST", "CDG", "CFG", "DOMINATE", "MATCHES", "REACHING_DEF")
+    val In: Array[String]  = Array("AST", "CDG", "CFG", "DOMINATE", "REACHING_DEF")
   }
 
   val factory = new NodeFactory[MethodReturnDb] {
@@ -292,9 +291,6 @@ class MethodReturn(graph_4762: Graph, id_4762: Long /*cf https://github.com/scal
     */
   def _unknownViaDominateIn: overflowdb.traversal.Traversal[Unknown] = get()._unknownViaDominateIn
 
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
-
   def reachingDefIn: Iterator[Return] = get().reachingDefIn
   override def _reachingDefIn         = get()._reachingDefIn
 
@@ -473,11 +469,8 @@ class MethodReturnDb(ref: NodeRef[NodeDb]) extends NodeDb(ref) with StoredNode w
   def _typeRefViaDominateIn: overflowdb.traversal.Traversal[TypeRef]       = dominateIn.collectAll[TypeRef]
   def _unknownViaDominateIn: overflowdb.traversal.Traversal[Unknown]       = dominateIn.collectAll[Unknown]
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](7)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](7)
-
-  def reachingDefIn: Iterator[Return] = createAdjacentNodeScalaIteratorByOffSet[Return](8)
-  override def _reachingDefIn         = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
+  def reachingDefIn: Iterator[Return] = createAdjacentNodeScalaIteratorByOffSet[Return](7)
+  override def _reachingDefIn         = createAdjacentNodeScalaIteratorByOffSet[StoredNode](7)
   def _returnViaReachingDefIn: overflowdb.traversal.Traversal[Return] = reachingDefIn.collectAll[Return]
 
   override def label: String = {

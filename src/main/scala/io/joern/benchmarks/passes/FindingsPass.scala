@@ -7,21 +7,12 @@ import io.joern.benchmarks.*
 import io.joern.dataflowengineoss.language.*
 import io.joern.dataflowengineoss.queryengine.EngineContext
 import io.shiftleft.codepropertygraph.generated.{Cpg, EdgeTypes}
-import io.shiftleft.codepropertygraph.generated.nodes.{
-  CfgNode,
-  Method,
-  NewFinding,
-  NewKeyValuePair,
-  NewSinkNode,
-  SourceNode
-}
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Method, NewFinding, NewKeyValuePair}
 
 class FindingsPass(cpg: Cpg)(implicit val context: EngineContext) extends CpgPass(cpg) {
 
   override def run(builder: DiffGraphBuilder): Unit = {
-    val sources = cpg.sources._matchesOut.cast[CfgNode]
-    val sinks   = cpg.sinks._matchesOut.cast[CfgNode]
-    sinks.reachableByFlows(sources).foreach { case Path(elements) =>
+    cpg.sinks.reachableByFlows(cpg.sources).passesNot(_.isSanitizer).foreach { case Path(elements) =>
       val sink = elements.last
       val kvPairs = sink.inAst.collectAll[Method].typeDecl.name.map { testName =>
         NewKeyValuePair()

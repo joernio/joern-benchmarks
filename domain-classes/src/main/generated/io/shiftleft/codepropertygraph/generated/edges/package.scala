@@ -34,7 +34,6 @@ object Factories {
     Imports.factory,
     InheritsFrom.factory,
     IsCallForImport.factory,
-    Matches.factory,
     ParameterLink.factory,
     PostDominate.factory,
     ReachingDef.factory,

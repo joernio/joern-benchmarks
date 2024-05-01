@@ -78,7 +78,6 @@ object MethodParameterIn {
     List(
       io.shiftleft.codepropertygraph.generated.edges.Ast.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Cfg.layoutInformation,
-      io.shiftleft.codepropertygraph.generated.edges.Matches.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.ReachingDef.layoutInformation,
       io.shiftleft.codepropertygraph.generated.edges.Ref.layoutInformation
     ).asJava
@@ -86,7 +85,7 @@ object MethodParameterIn {
 
   object Edges {
     val Out: Array[String] = Array("AST", "CAPTURED_BY", "EVAL_TYPE", "PARAMETER_LINK", "REACHING_DEF", "TAGGED_BY")
-    val In: Array[String]  = Array("AST", "CFG", "MATCHES", "REACHING_DEF", "REF")
+    val In: Array[String]  = Array("AST", "CFG", "REACHING_DEF", "REF")
   }
 
   val factory = new NodeFactory[MethodParameterInDb] {
@@ -236,9 +235,6 @@ class MethodParameterIn(graph_4762: Graph, id_4762: Long /*cf https://github.com
 
   def cfgIn: Iterator[CfgNode] = get().cfgIn
   override def _cfgIn          = get()._cfgIn
-
-  def matchesIn: Iterator[StoredNode] = get().matchesIn
-  override def _matchesIn             = get()._matchesIn
 
   def reachingDefIn: Iterator[Method] = get().reachingDefIn
   override def _reachingDefIn         = get()._reachingDefIn
@@ -446,15 +442,12 @@ class MethodParameterInDb(ref: NodeRef[NodeDb])
   def cfgIn: Iterator[CfgNode] = createAdjacentNodeScalaIteratorByOffSet[CfgNode](7)
   override def _cfgIn          = createAdjacentNodeScalaIteratorByOffSet[StoredNode](7)
 
-  def matchesIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
-  override def _matchesIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
-
-  def reachingDefIn: Iterator[Method] = createAdjacentNodeScalaIteratorByOffSet[Method](9)
-  override def _reachingDefIn         = createAdjacentNodeScalaIteratorByOffSet[StoredNode](9)
+  def reachingDefIn: Iterator[Method] = createAdjacentNodeScalaIteratorByOffSet[Method](8)
+  override def _reachingDefIn         = createAdjacentNodeScalaIteratorByOffSet[StoredNode](8)
   def _methodViaReachingDefIn: overflowdb.traversal.Traversal[Method] = reachingDefIn.collectAll[Method]
 
-  def refIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](10)
-  override def _refIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](10)
+  def refIn: Iterator[StoredNode] = createAdjacentNodeScalaIteratorByOffSet[StoredNode](9)
+  override def _refIn             = createAdjacentNodeScalaIteratorByOffSet[StoredNode](9)
   def _closureBindingViaRefIn: overflowdb.traversal.Traversal[ClosureBinding] = refIn.collectAll[ClosureBinding]
   def referencingIdentifiers: overflowdb.traversal.Traversal[Identifier]      = refIn.collectAll[Identifier]
 

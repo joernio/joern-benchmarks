@@ -204,14 +204,6 @@ class GeneratedNodeStarterExt(val wrapper: Cpg) extends AnyVal {
   @overflowdb.traversal.help.Doc(info = "All nodes of type Return, i.e. with label RETURN")
   def ret: Iterator[nodes.Return] = overflowdb.traversal.InitialTraversal.from[nodes.Return](wrapper.graph, "RETURN")
 
-  @overflowdb.traversal.help.Doc(info = "All nodes of type SinkNode, i.e. with label SINK_NODE")
-  def sinkNode: Iterator[nodes.SinkNode] =
-    overflowdb.traversal.InitialTraversal.from[nodes.SinkNode](wrapper.graph, "SINK_NODE")
-
-  @overflowdb.traversal.help.Doc(info = "All nodes of type SourceNode, i.e. with label SOURCE_NODE")
-  def sourceNode: Iterator[nodes.SourceNode] =
-    overflowdb.traversal.InitialTraversal.from[nodes.SourceNode](wrapper.graph, "SOURCE_NODE")
-
   @overflowdb.traversal.help.Doc(info = "All nodes of type Tag, i.e. with label TAG")
   def tag: Iterator[nodes.Tag] = overflowdb.traversal.InitialTraversal.from[nodes.Tag](wrapper.graph, "TAG")
 

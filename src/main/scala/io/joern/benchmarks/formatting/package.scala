@@ -33,7 +33,7 @@ package object formatting {
       }
       (outputDir / "metrics.csv").bufferedWriter.apply { bw =>
         bw.write("name,value\n")
-        bw.write(s"youdenIndex,${result.youdenIndex}\n")
+        bw.write(s"informedness,${result.informedness}\n")
       }
     }
   }
@@ -42,8 +42,8 @@ package object formatting {
     override def writeTo(outputDir: File): Unit = {
       (outputDir / "results.md").bufferedWriter.apply { fos =>
         fos.write("# Statistics\n\n")
-        fos.write(s"Youden Index: ${result.youdenIndex}\n")
-        fos.write("# Test Outcomes \n\n")
+        fos.write(s"Informedness: ${result.informedness}\n")
+        fos.write("\n# Test Outcomes \n\n")
         fos.write("|Test Name|Outcome|\n")
         fos.write("|---|---|\n")
         result.entries.foreach { case TestEntry(testName, outcome) =>

@@ -1,8 +1,9 @@
 package io.joern
 
 import io.shiftleft.codepropertygraph.generated.{Cpg, NodeTypes}
-import io.shiftleft.codepropertygraph.generated.nodes.{Method, Finding, SourceNode, SinkNode}
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding, Method, StoredNode}
 import io.shiftleft.semanticcpg.language.*
+import overflowdb.BatchedUpdate.DiffGraphBuilder
 import overflowdb.traversal.*
 import overflowdb.traversal.help.{Doc, DocSearchPackages, Traversal, TraversalSource}
 
@@ -14,20 +15,38 @@ package object benchmarks {
   implicit val docSearchPackages: DocSearchPackages =
     () => io.shiftleft.codepropertygraph.Cpg.docSearchPackages() :+ this.getClass.getPackageName
 
-  implicit def toBenchmarkStarts(cpg: Cpg): BenchmarkStarters =
+  implicit def toBenchmarkStarters(cpg: Cpg): BenchmarkStarters =
     new BenchmarkStarters(cpg)
+
+  implicit def toCfgTaggingExt[T <: StoredNode](traversal: Iterator[T]): TaggingExt[T] =
+    new TaggingExt(traversal)
 
   /** Example of custom node type starters */
   @TraversalSource
   class BenchmarkStarters(cpg: Cpg) {
+
     def findings: Iterator[Finding] =
       cpg.graph.nodes(NodeTypes.FINDING).asScala.cast[Finding]
 
-    def sources: Iterator[SourceNode] =
-      cpg.graph.nodes(NodeTypes.SOURCE_NODE).asScala.cast[SourceNode]
+    def sources: Iterator[CfgNode] =
+      cpg.all.where(_.tag.name("SOURCE")).collectAll[CfgNode]
 
-    def sinks: Iterator[SinkNode] =
-      cpg.graph.nodes(NodeTypes.SINK_NODE).asScala.cast[SinkNode]
+    def sinks: Iterator[CfgNode] =
+      cpg.all.where(_.tag.name("SINK")).collectAll[CfgNode]
+
+    def sanitizers: Iterator[CfgNode] =
+      cpg.all.where(_.tag.name("SANITIZER")).collectAll[CfgNode]
+  }
+
+  class TaggingExt[T <: StoredNode](traversal: Iterator[T]) {
+
+    def tagAsSource(implicit diffGraph: DiffGraphBuilder): Unit = traversal.newTagNode("SOURCE").store()
+
+    def tagAsSink(implicit diffGraph: DiffGraphBuilder): Unit = traversal.newTagNode("SINK").store()
+
+    def tagAsSanitizer(implicit diffGraph: DiffGraphBuilder): Unit = traversal.newTagNode("SANITIZER").store()
+
+    def isSanitizer: Iterator[T] = traversal.where(_.tag.nameExact("SANITIZER"))
 
   }
 }

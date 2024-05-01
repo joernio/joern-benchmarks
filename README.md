@@ -30,3 +30,4 @@ frontend (JVM bytecode).
 |---------------------|--------|
 | `OWASP`             | WIP    |
 | `SECURIBENCH_MICRO` | WIP    |
+| `ICHNAEA`           | WIP    |

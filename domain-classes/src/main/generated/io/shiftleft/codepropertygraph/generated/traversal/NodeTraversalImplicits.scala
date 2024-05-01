@@ -108,12 +108,6 @@ trait NodeTraversalImplicits extends NodeBaseTypeTraversalImplicits {
   implicit def toReturnTraversalExtGen[NodeType <: Return](
     trav: IterableOnce[NodeType]
   ): ReturnTraversalExtGen[NodeType] = new ReturnTraversalExtGen(trav.iterator)
-  implicit def toSinkNodeTraversalExtGen[NodeType <: SinkNode](
-    trav: IterableOnce[NodeType]
-  ): SinkNodeTraversalExtGen[NodeType] = new SinkNodeTraversalExtGen(trav.iterator)
-  implicit def toSourceNodeTraversalExtGen[NodeType <: SourceNode](
-    trav: IterableOnce[NodeType]
-  ): SourceNodeTraversalExtGen[NodeType] = new SourceNodeTraversalExtGen(trav.iterator)
   implicit def toTagTraversalExtGen[NodeType <: Tag](trav: IterableOnce[NodeType]): TagTraversalExtGen[NodeType] =
     new TagTraversalExtGen(trav.iterator)
   implicit def toTagNodePairTraversalExtGen[NodeType <: TagNodePair](
@@ -195,8 +189,6 @@ class StoredNodeTraversalExtGen[NodeType <: StoredNode](val traversal: Iterator[
   def _inheritsFromIn: Iterator[StoredNode]     = traversal.flatMap { _._inheritsFromIn }
   def _isCallForImportOut: Iterator[StoredNode] = traversal.flatMap { _._isCallForImportOut }
   def _isCallForImportIn: Iterator[StoredNode]  = traversal.flatMap { _._isCallForImportIn }
-  def _matchesOut: Iterator[StoredNode]         = traversal.flatMap { _._matchesOut }
-  def _matchesIn: Iterator[StoredNode]          = traversal.flatMap { _._matchesIn }
   def _parameterLinkOut: Iterator[StoredNode]   = traversal.flatMap { _._parameterLinkOut }
   def _parameterLinkIn: Iterator[StoredNode]    = traversal.flatMap { _._parameterLinkIn }
   def _postDominateOut: Iterator[StoredNode]    = traversal.flatMap { _._postDominateOut }

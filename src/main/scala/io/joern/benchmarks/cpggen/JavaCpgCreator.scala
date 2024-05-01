@@ -16,8 +16,6 @@ import scala.util.Try
 
 sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
-  val frontend: String
-
   override def extraSemantics: List[FlowSemantic] = DefaultSemantics.javaFlows ++ List(
     F(
       "javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1)",
@@ -47,11 +45,6 @@ sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
     new FindingsPass(cpg).createAndApply()
     cpg
   }
-
-  def createCpg(
-    inputDir: File,
-    sourcesAndSinks: Cpg => BenchmarkSourcesAndSinks = { _ => DefaultBenchmarkSourcesAndSinks() }
-  ): Try[Cpg]
 
 }
 

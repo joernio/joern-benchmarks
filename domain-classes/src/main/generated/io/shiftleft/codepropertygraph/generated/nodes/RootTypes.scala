@@ -61,7 +61,6 @@ trait StoredNode extends Node with AbstractNode with Product {
   def _importsIn: Iterator[StoredNode]          = Iterator.empty
   def _inheritsFromIn: Iterator[StoredNode]     = Iterator.empty
   def _isCallForImportIn: Iterator[StoredNode]  = Iterator.empty
-  def _matchesIn: Iterator[StoredNode]          = Iterator.empty
   def _parameterLinkIn: Iterator[StoredNode]    = Iterator.empty
   def _postDominateIn: Iterator[StoredNode]     = Iterator.empty
   def _reachingDefIn: Iterator[StoredNode]      = Iterator.empty
@@ -86,7 +85,6 @@ trait StoredNode extends Node with AbstractNode with Product {
   def _importsOut: Iterator[StoredNode]         = Iterator.empty
   def _inheritsFromOut: Iterator[StoredNode]    = Iterator.empty
   def _isCallForImportOut: Iterator[StoredNode] = Iterator.empty
-  def _matchesOut: Iterator[StoredNode]         = Iterator.empty
   def _parameterLinkOut: Iterator[StoredNode]   = Iterator.empty
   def _postDominateOut: Iterator[StoredNode]    = Iterator.empty
   def _reachingDefOut: Iterator[StoredNode]     = Iterator.empty
@@ -133,8 +131,6 @@ object Factories {
     Namespace.factory,
     NamespaceBlock.factory,
     Return.factory,
-    SinkNode.factory,
-    SourceNode.factory,
     Tag.factory,
     TagNodePair.factory,
     TemplateDom.factory,
