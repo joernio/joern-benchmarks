@@ -1,11 +1,12 @@
 package io.joern.benchmarks.runner
 
 import better.files.File
+import com.github.sh4869.semver_parser.{SemVer, Range}
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding, Expression}
 import io.shiftleft.semanticcpg.language.*
 import org.slf4j.LoggerFactory
 import upickle.default.*
@@ -111,10 +112,29 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
   }
 
   class IchnaeaSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
+
     override def sources: Iterator[CfgNode] = {
       val growlSource = cpg.method.nameExact("growl").parameter
-      growlSource
+      val eventHandler =
+        cpg.method.and(_.isLambda, _._refIn.collectAll[Expression].inCall.receiver.code("e[.]on")).parameter
+      growlSource ++ eventHandler
     }
+
+    override def sinks: Iterator[CfgNode] = {
+      // Vulnerable version of growl
+      val growlCall = {
+        cpg.dependency
+          .nameExact("growl")
+          .filterNot(d => Try(SemVer(d.version.stripPrefix("~"))).isFailure)
+          .headOption match {
+          case Some(growlDep) if Range(">1.9.2").invalid(SemVer(growlDep.version.stripPrefix("~"))) =>
+            cpg.call.nameExact("growl").argument
+          case _ => Iterator.empty
+        }
+      }
+      growlCall
+    }
+
   }
 
 }
