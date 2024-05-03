@@ -116,25 +116,35 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
 
     override def sources: Iterator[CfgNode] = {
       val growlSource = cpg.method.nameExact("growl").parameter
-      // How many libraries expose functions. We consider these inputs to be "attacker-controlled".
+      // Many libraries export functions which we consider the parameters of to be "attacker-controlled".
+      val exposeFunctionSink = cpg.method
+        .nameExact(Operators.indexAccess, Operators.fieldAccess)
+        .callIn
+        .code("(:?module.)?exports.*")
+        .inAssignment
+        .source
+        .l
+
+      // e.g. val func = function (x) {}; module.exports = func
+      val exposedObjectsSource = exposeFunctionSink
+        .reachableBy(cpg.identifier.where(_.inAssignment.source.isMethodRef))
+        .inAssignment
+        .source
+        .isMethodRef
+        .referencedMethod
 
       def findExposedMethods(m: Method): Iterator[Method] = {
         val assignedMethodRefs = m.assignment.source.isMethodRef
-        m ++ m.methodReturn.toReturn
+        m ++ (m.methodReturn.toReturn ++ exposeFunctionSink)
           .reachableBy(assignedMethodRefs)
           .isMethodRef
           .referencedMethod
           .flatMap(findExposedMethods)
       }
 
-      val possiblyExposedFunctions = cpg.method
-        .nameExact(Operators.indexAccess, Operators.fieldAccess)
-        .callIn
-        .code("(:?module.)?exports.*")
-        .inAssignment
-        .source
+      val possiblyExposedFunctions = exposeFunctionSink
         .flatMap {
-          // Blocks are used in object constuctors e.g. module.exports = { x = function(e) {} }
+          // Blocks are used in object constructors e.g. module.exports = { x = function(e) {} }
           case x: Block     => x.assignment.source.isMethodRef
           case x: MethodRef => Iterator(x)
           case _            => Iterator.empty
@@ -142,7 +152,7 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         .referencedMethod
         .flatMap(findExposedMethods)
 
-      possiblyExposedFunctions.parameter.indexGt(0)
+      (possiblyExposedFunctions ++ exposedObjectsSource).parameter.indexGt(0)
     }
 
     override def sinks: Iterator[CfgNode] = {
