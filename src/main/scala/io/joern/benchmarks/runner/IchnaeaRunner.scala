@@ -7,7 +7,7 @@ import io.joern.benchmarks.Domain.*
 import io.joern.dataflowengineoss.language.*
 import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Method, Finding, Expression, MethodRef, Block}
+import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 import org.slf4j.LoggerFactory
 import upickle.default.*
@@ -164,7 +164,17 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
           .flatMap(findExposedMethods)
           .l
 
-      (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject).parameter.indexGt(0)
+      val allExposedMethods = (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject).l
+      val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to dot his yet
+        .collectAll[MethodRef]
+        .outE("CAPTURE")
+        .inV
+        .outE
+        .inV
+        .collectAll[Local]
+        .referencingIdentifiers
+        .l
+      allExposedMethods.parameter.indexGt(0) ++ exposedLocalsViaCapture
     }
 
     override def sinks: Iterator[CfgNode] = {
