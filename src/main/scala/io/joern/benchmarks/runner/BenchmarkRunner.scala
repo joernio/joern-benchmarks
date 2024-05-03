@@ -2,8 +2,10 @@ package io.joern.benchmarks.runner
 
 import better.files.File
 import io.joern.benchmarks.Domain.*
+import io.joern.dataflowengineoss.queryengine.EngineContext
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{AstNode, CfgNode, Finding}
+import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.net.URL
@@ -54,6 +56,9 @@ trait BenchmarkRunner(protected val datasetDir: File) {
 /** Used to specify benchmark-specific sources and sinks.
   */
 trait BenchmarkSourcesAndSinks {
+
+  protected implicit val resolver: ICallResolver      = NoResolve
+  protected implicit val engineContext: EngineContext = EngineContext()
 
   def sources: Iterator[CfgNode] = Iterator.empty
 

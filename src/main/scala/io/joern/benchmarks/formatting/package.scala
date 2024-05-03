@@ -27,7 +27,7 @@ package object formatting {
     override def writeTo(outputDir: File): Unit = {
       (outputDir / "test_results.csv").bufferedWriter.apply { bw =>
         bw.write("test_name,outcome\n")
-        result.entries.foreach { case TestEntry(testName, outcome) =>
+        result.entries.sortBy(_.testName).foreach { case TestEntry(testName, outcome) =>
           bw.write(s"$testName,$outcome\n")
         }
       }
@@ -46,7 +46,7 @@ package object formatting {
         fos.write("\n# Test Outcomes \n\n")
         fos.write("|Test Name|Outcome|\n")
         fos.write("|---|---|\n")
-        result.entries.foreach { case TestEntry(testName, outcome) =>
+        result.entries.sortBy(_.testName).foreach { case TestEntry(testName, outcome) =>
           fos.write(s"|$testName|$outcome|\n")
         }
       }

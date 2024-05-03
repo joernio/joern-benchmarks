@@ -4,9 +4,10 @@ import better.files.File
 import com.github.sh4869.semver_parser.{SemVer, Range}
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
+import io.joern.dataflowengineoss.language.*
 import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
-import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding, Expression}
+import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Method, Finding, Expression, MethodRef, Block}
 import io.shiftleft.semanticcpg.language.*
 import org.slf4j.LoggerFactory
 import upickle.default.*
@@ -115,9 +116,33 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
 
     override def sources: Iterator[CfgNode] = {
       val growlSource = cpg.method.nameExact("growl").parameter
-      val eventHandler =
-        cpg.method.and(_.isLambda, _._refIn.collectAll[Expression].inCall.receiver.code("e[.]on")).parameter
-      growlSource ++ eventHandler
+      // How many libraries expose functions. We consider these inputs to be "attacker-controlled".
+
+      def findExposedMethods(m: Method): Iterator[Method] = {
+        val assignedMethodRefs = m.assignment.source.isMethodRef
+        m ++ m.methodReturn.toReturn
+          .reachableBy(assignedMethodRefs)
+          .isMethodRef
+          .referencedMethod
+          .flatMap(findExposedMethods)
+      }
+
+      val possiblyExposedFunctions = cpg.method
+        .nameExact(Operators.indexAccess, Operators.fieldAccess)
+        .callIn
+        .code("(:?module.)?exports.*")
+        .inAssignment
+        .source
+        .flatMap {
+          // Blocks are used in object constuctors e.g. module.exports = { x = function(e) {} }
+          case x: Block     => x.assignment.source.isMethodRef
+          case x: MethodRef => Iterator(x)
+          case _            => Iterator.empty
+        }
+        .referencedMethod
+        .flatMap(findExposedMethods)
+
+      possiblyExposedFunctions.parameter.indexGt(0)
     }
 
     override def sinks: Iterator[CfgNode] = {

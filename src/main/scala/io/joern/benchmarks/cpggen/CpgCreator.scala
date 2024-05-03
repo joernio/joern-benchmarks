@@ -14,7 +14,7 @@ trait CpgCreator {
   val frontend: String
 
   protected implicit val semantics: Semantics = Semantics.fromList(DefaultSemantics.operatorFlows ++ extraSemantics)
-  protected implicit val engineContext: EngineContext = EngineContext()
+  protected implicit val engineContext: EngineContext = EngineContext(semantics)
 
   protected def extraSemantics: List[FlowSemantic] = Nil
 
