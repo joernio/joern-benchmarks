@@ -132,6 +132,7 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         .source
         .isMethodRef
         .referencedMethod
+        .l
 
       def findExposedMethods(m: Method): Iterator[Method] = {
         val assignedMethodRefs = m.assignment.source.isMethodRef
@@ -151,8 +152,19 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         }
         .referencedMethod
         .flatMap(findExposedMethods)
+        .l
 
-      (possiblyExposedFunctions ++ exposedObjectsSource).parameter.indexGt(0)
+      val assignedToExportedObject = // Handles `module.exports = new(function() { this.foo = function() })()`
+        exposeFunctionSink.isBlock.astChildren.isCall.callee.fieldAccess
+          .code("this.*")
+          .inAssignment
+          .source
+          .isMethodRef
+          .referencedMethod
+          .flatMap(findExposedMethods)
+          .l
+
+      (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject).parameter.indexGt(0)
     }
 
     override def sinks: Iterator[CfgNode] = {
