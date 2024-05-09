@@ -3,7 +3,7 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JsSrcCpgCreator}
+import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JavaSrcCpgCreator}
 import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
@@ -70,7 +70,11 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   }
 
   override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
-    cpg.findings.filter(_.keyValuePairs.exists(_.value == testName)).l
+    val List(name, lineNo) = testName.split(':').toList: @unchecked
+    cpg.findings
+      .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == name))
+      .filter(_.keyValuePairs.keyExact(FindingsPass.LineNo).exists(_.value == lineNo))
+      .l
   }
 
   override def run(): Result = {
@@ -117,7 +121,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   private def runSecuribenchMicro(): Result = {
     val inputDir = cpgCreator match {
       case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
-      case creator: JsSrcCpgCreator       => benchmarkBaseDir / "src"
+      case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
     }
     cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
       case Failure(exception) =>

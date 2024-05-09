@@ -38,7 +38,9 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
   override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
-    cpg.findings.filter(_.keyValuePairs.exists(_.value.split(':').headOption.contains(testName))).l
+    cpg.findings
+      .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == testName))
+      .l
   }
 
   override def run(): Result = {

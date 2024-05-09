@@ -1,7 +1,7 @@
 package io.joern.benchmarks.runner
 
 import better.files.File
-import com.github.sh4869.semver_parser.{SemVer, Range}
+import com.github.sh4869.semver_parser.{Range, SemVer}
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.dataflowengineoss.language.*
@@ -9,6 +9,7 @@ import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
+import io.shiftleft.semanticcpg.language.operatorextension.OpNodes.FieldAccess
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -120,8 +121,8 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
       val exposeFunctionSink = cpg.method
         .nameExact(Operators.indexAccess, Operators.fieldAccess)
         .callIn
-        .code("(:?module.)?exports.*")
         .inAssignment
+        .code("(:?module.)?exports.*")
         .source
         .l
 
@@ -133,6 +134,9 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         .isMethodRef
         .referencedMethod
         .l
+
+      // TODO: func.utils.foo = function() {} not detected
+      val fieldsOfExposedObjects = exposedObjectsSource
 
       def findExposedMethods(m: Method): Iterator[Method] = {
         val assignedMethodRefs = m.assignment.source.isMethodRef

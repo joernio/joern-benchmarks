@@ -26,8 +26,8 @@ A benchmarking suite for Joern
 The benchmark naming convention of `<BENCHMARK>_<FRONTEND>`, e.g. `OWASP_JAVA` runs `OWASP` using the `jimple2cpg`
 frontend (JVM bytecode).
 
-| Benchmark                                                             | Status | 
-|-----------------------------------------------------------------------|--------|
-| [`OWASP`](https://owasp.org/www-project-benchmark/)                   | WIP    |
-| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro) | WIP    |
-| [`ICHNAEA`](https://www.franktip.org/pubs/tse2020.pdf)                | WIP    |
+| Benchmark                                                             | Status | Enabled Frontends |
+|-----------------------------------------------------------------------|--------|-------------------|
+| [`OWASP`](https://owasp.org/www-project-benchmark/)                   | WIP    | `JAVASRC`         |
+| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro) | WIP    | `JAVASRC` `JAVA`  |
+| [`ICHNAEA`](https://www.franktip.org/pubs/tse2020.pdf)                | WIP    | `JSSRC`           |
