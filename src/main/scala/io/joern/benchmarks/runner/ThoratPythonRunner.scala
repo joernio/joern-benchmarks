@@ -26,7 +26,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val version        = "0.0.1"
+  private val version        = "0.0.2"
   override val benchmarkName = s"Thorat Python v$version ${cpgCreator.frontend}"
 
   override protected val benchmarkUrl: URL = URI(
