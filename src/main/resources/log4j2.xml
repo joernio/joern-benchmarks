@@ -15,7 +15,7 @@
     </Appenders>
     <Loggers>
         <Logger name="io.shiftleft.overflowdb" level="warn" />
-        <Logger name="io.joern.benchmarks.dataflowengineoss" level="info" />
+        <Logger name="io.joern.benchmarks" level="info" />
         <Root level="ERROR">
             <AppenderRef ref="stdout" />
             <AppenderRef ref="stderr" />

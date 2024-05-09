@@ -22,15 +22,15 @@ object Domain {
       *   tested, it will simply be a measure of the precision of these two (either sensitivity or specificity).
       */
     def informedness: Double = {
-      val tp = entries.count(_.outcome == TestOutcome.TP).toDouble
-      val fp = entries.count(_.outcome == TestOutcome.FP).toDouble
-      val tn = entries.count(_.outcome == TestOutcome.TN).toDouble
-      val fn = entries.count(_.outcome == TestOutcome.FN).toDouble
-
       if (tn == 0 && fp == 0) tp / (tp + fn)
       else if (tp == 0 && fn == 0) tn / (tn + fp)
       else tp / (tp + fn) + tn / (tn + fp) - 1.0
     }
+
+    def tp = entries.count(_.outcome == TestOutcome.TP).toDouble
+    def fp = entries.count(_.outcome == TestOutcome.FP).toDouble
+    def tn = entries.count(_.outcome == TestOutcome.TN).toDouble
+    def fn = entries.count(_.outcome == TestOutcome.FN).toDouble
 
     @targetName("appendAll")
     def ++(o: Result): Result = {

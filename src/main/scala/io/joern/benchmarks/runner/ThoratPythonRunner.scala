@@ -14,7 +14,7 @@ import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import org.slf4j.LoggerFactory
 import upickle.default.*
-
+import scala.collection.mutable
 import java.io.FileOutputStream
 import java.net.{HttpURLConnection, URI, URL}
 import scala.util.{Failure, Success, Try, Using}
@@ -35,7 +35,10 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
   override protected val benchmarkFileName: String = s"benchmark-for-taint-analysis-tools-for-python-$version"
   override protected val benchmarkBaseDir: File    = datasetDir / benchmarkFileName
 
-  override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
+  override def initialize(): Try[File] = {
+    if (!benchmarkBaseDir.exists) downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
+    else Try(benchmarkBaseDir)
+  }
 
   override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
@@ -55,7 +58,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     }
   }
 
-  private lazy val testMetaData: Map[File, TAF] = {
+  private lazy val testMetaData: Map[String, TAF] = {
     val testDir     = benchmarkBaseDir / "tests"
     val metaDataDir = benchmarkBaseDir / "tests_metadata"
     metaDataDir.list.flatMap { testDir =>
@@ -65,14 +68,14 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
         .map { testMetaDataFile =>
           val testMetaData = read[TAF](ujson.Readable.fromFile(testMetaDataFile.toJava))
           val targetFile   = testDir / testName / testMetaData.fileName
-          targetFile -> testMetaData
+          targetFile.name -> testMetaData
         }
     }.toMap
   }
 
   private def getExpectedTestOutcomes: Map[String, Boolean] = {
-    testMetaData.flatMap { case (file, metaData) =>
-      metaData.findings.map(f => s"${file.name}:${f.sink.lineNo}" -> !f.isNegative)
+    testMetaData.flatMap { case (filename, metaData) =>
+      metaData.findings.map(f => s"$filename:${f.sink.lineNo}" -> !f.isNegative)
     }
   }
 
@@ -102,24 +105,52 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
-    override def sources: Iterator[CfgNode] = {
-      testMetaData.values
+    private val candidates: List[TAF] = cpg.file.name.flatMap(testMetaData.get).l
+
+    private val sourceCandidates: List[TAFStatement] =
+      candidates
         .flatMap(_.findings)
         .map(_.source)
-        .flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
-          cpg.method.nameExact(methodName).call.and(_.lineNumber(lineNo), _.nameExact(targetName))
+
+    private val sinkCandidates: List[TAFStatement] =
+      candidates
+        .flatMap(_.findings)
+        .map(_.sink)
+
+    override def sources: Iterator[CfgNode] = {
+      val filenameString = candidates.map(_.fileName).mkString(",")
+      sourceCandidates.flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
+        val methodTrav = cpg.method.nameExact(methodName).l
+        if (methodTrav.isEmpty) {
+          logger.warn(s"Unable to match source method for '$methodName' among [$filenameString]")
+          Iterator.empty
+        } else {
+          val callTrav =
+            methodTrav.call.and(_.lineNumber(lineNo), _.or(_.nameExact(targetName), _.code(s".*$targetName"))).l
+          if (callTrav.isEmpty) {
+            logger.warn(s"Unable to match source calls for $targetName among [$filenameString]")
+          }
+          callTrav
         }
-        .iterator
+      }.iterator
     }
 
     override def sinks: Iterator[CfgNode] = {
-      testMetaData.values
-        .flatMap(_.findings)
-        .map(_.sink)
-        .flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
-          cpg.method.nameExact(methodName).call.and(_.lineNumber(lineNo), _.nameExact(targetName)).argument
+      val filenameString = candidates.map(_.fileName).mkString(",")
+      sinkCandidates.flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
+        val methodTrav = cpg.method.nameExact(methodName).l
+        if (methodTrav.isEmpty) {
+          logger.warn(s"Unable to match sink method for '$methodName' among [$filenameString]")
+          Iterator.empty
+        } else {
+          val callTrav =
+            methodTrav.call.and(_.lineNumber(lineNo), _.or(_.nameExact(targetName), _.code(s".*$targetName"))).l
+          if (callTrav.isEmpty) {
+            logger.warn(s"Unable to match sink calls for $targetName among [$filenameString]")
+          }
+          callTrav.argument.argumentIndexGt(0)
         }
-        .iterator
+      }.iterator
     }
 
   }

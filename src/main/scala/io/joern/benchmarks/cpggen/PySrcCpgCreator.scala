@@ -59,7 +59,7 @@ sealed trait PythonCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
 class PySrcCpgCreator extends PythonCpgCreator[PySrc2Cpg] {
 
-  override val frontend: String = Languages.JSSRC
+  override val frontend: String = Languages.PYTHONSRC
 
   def createCpg(
     inputDir: File,
