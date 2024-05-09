@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "io.joern"                %% "javasrc2cpg"       % Versions.joern,
   "io.joern"                %% "jimple2cpg"        % Versions.joern,
   "io.joern"                %% "jssrc2cpg"         % Versions.joern,
+  "io.joern"                %% "pysrc2cpg"         % Versions.joern,
   "io.joern"                %% "joern-cli"         % Versions.joern,
   "io.joern"                %% "semanticcpg"       % Versions.joern,
   "io.joern"                %% "dataflowengineoss" % Versions.joern,

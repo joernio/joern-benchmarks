@@ -2,10 +2,16 @@ package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
 import io.joern.benchmarks.formatting.formatterConstructors
-import io.joern.benchmarks.runner.{BenchmarkRunner, IchnaeaRunner, OWASPJavaRunner, SecuribenchMicroRunner}
+import io.joern.benchmarks.runner.{
+  BenchmarkRunner,
+  IchnaeaRunner,
+  OWASPJavaRunner,
+  SecuribenchMicroRunner,
+  ThoratPythonRunner
+}
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator}
+import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -57,7 +63,8 @@ object Benchmark {
       AvailableBenchmarks.SECURIBENCH_MICRO_JAVA,
       x => new SecuribenchMicroRunner(x.datasetDir, JVMBytecodeCpgCreator())
     ),
-    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaRunner(x.datasetDir, JsSrcCpgCreator()))
+    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaRunner(x.datasetDir, JsSrcCpgCreator())),
+    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonRunner(x.datasetDir, PySrcCpgCreator()))
   )
 
 }
