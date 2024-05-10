@@ -16,6 +16,7 @@ object AvailableBenchmarks extends Enumeration {
   val SECURIBENCH_MICRO_JAVASRC = Value
   val SECURIBENCH_MICRO_JAVA    = Value
   val ICHNAEA_JSSRC             = Value
+  val THORAT_PYSRC              = Value
 }
 
 object OutputFormat extends Enumeration {

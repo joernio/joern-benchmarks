@@ -198,17 +198,17 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
 
   }
 
+  implicit val urlRw: ReadWriter[URL] = readwriter[ujson.Value]
+    .bimap[URL](
+      x => ujson.Str(x.toString),
+      {
+        case json @ (j: ujson.Str) => URI(json.str).toURL
+        case x                     => throw RuntimeException(s"Unexpected value type for URL strings: ${x.getClass}")
+      }
+    )
+
+  case class NPMRegistryResponse(dist: NPMDistBody) derives ReadWriter
+
+  case class NPMDistBody(tarball: URL) derives ReadWriter
+
 }
-
-implicit val urlRw: ReadWriter[URL] = readwriter[ujson.Value]
-  .bimap[URL](
-    x => ujson.Str(x.toString),
-    {
-      case json @ (j: ujson.Str) => URI(json.str).toURL
-      case x                     => throw RuntimeException(s"Unexpected value type for URL strings: ${x.getClass}")
-    }
-  )
-
-case class NPMRegistryResponse(dist: NPMDistBody) derives ReadWriter
-
-case class NPMDistBody(tarball: URL) derives ReadWriter

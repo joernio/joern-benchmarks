@@ -69,7 +69,7 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     val expectedTestOutcomes = getExpectedTestOutcomes
     cpgCreator.createCpg(benchmarkBaseDir) match {
       case Failure(exception) =>
-        logger.error("Unable to generate CPG for OWASP benchmark")
+        logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
         Result()
       case Success(cpg) =>
         Using.resource(cpg) { cpg =>

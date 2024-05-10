@@ -16,19 +16,18 @@ class FindingsPass(cpg: Cpg)(implicit val context: EngineContext) extends CpgPas
   override def run(builder: DiffGraphBuilder): Unit = {
     cpg.sinks.reachableByFlows(cpg.sources).passesNot(_.isSanitizer).foreach { case Path(elements) =>
       val sink = elements.last
-      val kvPairs = NewKeyValuePair()
+      val lineNoPair = NewKeyValuePair()
         .key(LineNo)
-        .value(sink.lineNumber.getOrElse(-1).toString()) +: sink.inAst
-        .collectAll[Method]
-        .typeDecl
-        .name
-        .map { typeName =>
-          NewKeyValuePair()
-            .key(SurroundingType)
-            .value(typeName)
-        }
-        .toSeq
-      val finding = NewFinding().evidence(elements).keyValuePairs(kvPairs)
+        .value(sink.lineNumber.getOrElse(-1).toString()) :: Nil
+      val surroundingTypePair = sink.inAst.isMethod.typeDecl.name.map { typeName =>
+        NewKeyValuePair()
+          .key(SurroundingType)
+          .value(typeName)
+      }.toSeq
+      val fileNamePair = sink.inAst.isMethod.file.name.map(NewKeyValuePair().key(FileName).value(_)).toSeq
+
+      val pairs   = lineNoPair ++ surroundingTypePair ++ fileNamePair
+      val finding = NewFinding().evidence(elements).keyValuePairs(pairs)
       builder.addNode(finding)
     }
   }
@@ -36,6 +35,7 @@ class FindingsPass(cpg: Cpg)(implicit val context: EngineContext) extends CpgPas
 }
 
 object FindingsPass {
+  val FileName        = "FILE_NAME"
   val SurroundingType = "SURROUNDING_TYPE"
   val LineNo          = "LINE_NO"
 }
