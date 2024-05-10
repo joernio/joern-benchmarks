@@ -26,7 +26,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val version        = "0.0.2"
+  private val version        = "0.0.4"
   override val benchmarkName = s"Thorat Python v$version ${cpgCreator.frontend}"
 
   override protected val benchmarkUrl: URL = URI(
@@ -61,16 +61,19 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
   private lazy val testMetaData: Map[String, TAF] = {
     val testDir     = benchmarkBaseDir / "tests"
     val metaDataDir = benchmarkBaseDir / "tests_metadata"
-    metaDataDir.list.flatMap { testDir =>
-      val testName = testDir.name
-      testDir.list
-        .filter(f => f.`extension`.contains(".json") && f.name.endsWith("taf.json"))
-        .map { testMetaDataFile =>
-          val testMetaData = read[TAF](ujson.Readable.fromFile(testMetaDataFile.toJava))
-          val targetFile   = testDir / testName / testMetaData.fileName
-          targetFile.name -> testMetaData
-        }
-    }.toMap
+    metaDataDir.list
+      .filter(_.isDirectory)
+      .flatMap { testDir =>
+        val testName = testDir.name
+        testDir.list
+          .filter(f => f.`extension`.contains(".json") && f.name.endsWith("taf.json"))
+          .map { testMetaDataFile =>
+            val testMetaData = read[TAF](ujson.Readable.fromFile(testMetaDataFile.toJava))
+            val targetFile   = testDir / testName / testMetaData.fileName
+            targetFile.name -> testMetaData
+          }
+      }
+      .toMap
   }
 
   private def getExpectedTestOutcomes: Map[String, Boolean] = {
@@ -81,7 +84,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
 
   private def runThorat(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-    (benchmarkBaseDir / "tests").list
+    val result = (benchmarkBaseDir / "tests").list
       .filter(_.isDirectory)
       .map { testDir =>
         cpgCreator.createCpg(testDir, cpg => ThoratSourcesAndSinks(cpg)) match {
@@ -92,6 +95,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
             Using.resource(cpg) { cpg =>
               implicit val cpgImpl: Cpg = cpg
               val testName              = testDir.name
+              // TODO: Check for negatives/excluded findings
               val results = expectedTestOutcomes.collect {
                 case (testFullName, outcome) if testFullName.startsWith(testName) =>
                   TestEntry(testFullName, compare(testFullName, outcome))
@@ -101,6 +105,15 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
         }
       }
       .foldLeft(Result())(_ ++ _)
+    val leftoverResults =
+      expectedTestOutcomes
+        .filter { case (name, outcome) => !result.entries.exists(x => name.startsWith(x.testName)) }
+        .map {
+          case (name, false) => TestEntry(name, TestOutcome.TN)
+          case (name, true)  => TestEntry(name, TestOutcome.FN)
+        }
+        .l
+    result.copy(entries = result.entries ++ leftoverResults)
   }
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
@@ -125,12 +138,15 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
           logger.warn(s"Unable to match source method for '$methodName' among [$filenameString]")
           Iterator.empty
         } else {
-          val callTrav =
-            methodTrav.call.and(_.lineNumber(lineNo), _.or(_.nameExact(targetName), _.code(s".*$targetName"))).l
-          if (callTrav.isEmpty) {
-            logger.warn(s"Unable to match source calls for $targetName among [$filenameString]")
+          val targetTrav = targetName match {
+            case "" => methodTrav.call.assignment.source.lineNumber(lineNo).l
+            case callName =>
+              methodTrav.call.and(_.lineNumber(lineNo), _.or(_.nameExact(callName), _.code(s".*$callName"))).l
           }
-          callTrav
+          if (targetTrav.isEmpty) {
+            logger.warn(s"Unable to match source target for '$targetName' among [$filenameString]")
+          }
+          targetTrav
         }
       }.iterator
     }
@@ -143,12 +159,21 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
           logger.warn(s"Unable to match sink method for '$methodName' among [$filenameString]")
           Iterator.empty
         } else {
-          val callTrav =
-            methodTrav.call.and(_.lineNumber(lineNo), _.or(_.nameExact(targetName), _.code(s".*$targetName"))).l
-          if (callTrav.isEmpty) {
-            logger.warn(s"Unable to match sink calls for $targetName among [$filenameString]")
+          val targetTrav = targetName match {
+            case ""       => methodTrav.call.assignment.source.lineNumber(lineNo).l
+            case callName =>
+              // Tags calls and method refs (which would be identifiers for external method refs)
+              methodTrav.call.argument.isIdentifier.and(_.lineNumber(lineNo), _.nameExact(callName)).l ++
+                methodTrav.call
+                  .and(_.lineNumber(lineNo), _.or(_.nameExact(callName), _.code(s".*$callName")))
+                  .argument
+                  .argumentIndexGt(0)
+                  .l
           }
-          callTrav.argument.argumentIndexGt(0)
+          if (targetTrav.isEmpty) {
+            logger.warn(s"Unable to match sink target for '$targetName' among [$filenameString]")
+          }
+          targetTrav
         }
       }.iterator
     }

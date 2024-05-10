@@ -8,7 +8,15 @@ object Domain {
 
   implicit val resultRw: ReadWriter[Result] =
     readwriter[ujson.Value].bimap[Result](
-      x => ujson.Obj("entries" -> write[List[TestEntry]](x.entries), "youdenIndex" -> x.informedness),
+      x =>
+        ujson.Obj(
+          "entries"       -> write[List[TestEntry]](x.entries),
+          "informedness"  -> x.informedness,
+          "truePositive"  -> x.tp,
+          "falsePositive" -> x.fp,
+          "trueNegative"  -> x.tn,
+          "falseNegative" -> x.fp
+        ),
       json => Result(read[List[TestEntry]](json("entries")))
     )
 
@@ -24,13 +32,14 @@ object Domain {
     def informedness: Double = {
       if (tn == 0 && fp == 0) tp / (tp + fn)
       else if (tp == 0 && fn == 0) tn / (tn + fp)
-      else tp / (tp + fn) + tn / (tn + fp) - 1.0
+      else
+        tp / (tp + fn) + tn / (tn + fp) - 1.0
     }
 
-    def tp = entries.count(_.outcome == TestOutcome.TP).toDouble
-    def fp = entries.count(_.outcome == TestOutcome.FP).toDouble
-    def tn = entries.count(_.outcome == TestOutcome.TN).toDouble
-    def fn = entries.count(_.outcome == TestOutcome.FN).toDouble
+    def tp: Double = entries.count(_.outcome == TestOutcome.TP).toDouble
+    def fp: Double = entries.count(_.outcome == TestOutcome.FP).toDouble
+    def tn: Double = entries.count(_.outcome == TestOutcome.TN).toDouble
+    def fn: Double = entries.count(_.outcome == TestOutcome.FN).toDouble
 
     @targetName("appendAll")
     def ++(o: Result): Result = {
