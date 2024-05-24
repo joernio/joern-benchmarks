@@ -5,6 +5,7 @@ import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JavaCpgCreator, JsSrcCpgCreator}
 import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
+import io.joern.benchmarks.runner.{BenchmarkRunner, CompressionTypes, CpgBenchmarkRunner, SingleFileDownloader}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
 import io.joern.x2cpg.X2CpgFrontend
@@ -19,14 +20,13 @@ import java.net.{HttpURLConnection, URI, URL}
 import scala.util.{Failure, Success, Try, Using}
 import scala.xml.XML
 
-class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
+abstract class OWASPJavaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
-      with CpgBenchmarkRunner
     with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override val benchmarkName = s"OWASP Java v1.2 ${cpgCreator.frontend}"
+  override val benchmarkName = s"OWASP Java v1.2 $creatorLabel"
 
   override protected val benchmarkUrl: URL = URI(
     "https://github.com/OWASP-Benchmark/BenchmarkJava/archive/refs/tags/1.2beta.zip"
@@ -38,23 +38,7 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
-  override def findings(testName: String): List[Finding] = {
-    cpg.findings
-      .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == testName))
-      .l
-  }
-
-  override def run(): Result = {
-    initialize() match {
-      case Failure(exception) =>
-        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
-      case Success(benchmarkDir) =>
-        runOWASP()
-    }
-  }
-
-  private def getExpectedTestOutcomes: Map[String, Boolean] = {
+  protected def getExpectedTestOutcomes: Map[String, Boolean] = {
     val expectedResultsDir = benchmarkBaseDir / "src" / "main" / "java" / "org" / "owasp" / "benchmark" / "testcode"
     expectedResultsDir.list
       .filter(_.`extension`.contains(".xml"))
@@ -64,26 +48,6 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         testName -> (testMetaData \ "vulnerability").text.toBoolean
       }
       .toMap
-  }
-
-  private def runOWASP(): Result = {
-    val expectedTestOutcomes = getExpectedTestOutcomes
-    cpgCreator.createCpg(benchmarkBaseDir) match {
-      case Failure(exception) =>
-        logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
-        Result()
-      case Success(cpg) =>
-        Using.resource(cpg) { cpg =>
-          setCpg(cpg)
-          val testResults = expectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .sortBy(_.testName)
-            .l
-          Result(testResults)
-        }
-    }
   }
 
 }

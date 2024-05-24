@@ -4,31 +4,25 @@ import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JavaSrcCpgCreator}
-import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
-import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
-import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
+import io.joern.benchmarks.passes.FindingsPass
+import io.joern.benchmarks.runner.*
 import io.joern.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.*
-import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import org.slf4j.LoggerFactory
 
+import java.net.{URI, URL}
 import scala.collection.mutable
-import java.io.FileOutputStream
-import java.net.{HttpURLConnection, URI, URL}
-import java.nio.file.Path
 import scala.util.{Failure, Success, Try, Using}
-import scala.xml.XML
 
-class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
+abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
-      with CpgBenchmarkRunner
     with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override val benchmarkName = s"Securibench Micro v1.08 ${cpgCreator.frontend}"
+  override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
   override protected val benchmarkUrl: URL = URI(
     "https://github.com/too4words/securibench-micro/archive/6a5a724.zip"
@@ -42,7 +36,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
     downloadFile(apacheJdo, benchmarkBaseDir / "lib" / "jdo-api-3.1.jar")
     if (
-      cpgCreator.isInstanceOf[JVMBytecodeCpgCreator] && (benchmarkBaseDir / "classes")
+      creatorLabel == "JAVA" && (benchmarkBaseDir / "classes")
         .walk()
         .count(_.`extension`.contains(".class")) < 1
     ) {
@@ -70,28 +64,10 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     benchmarkBaseDir
   }
 
-  override def findings(testName: String): List[Finding] = {
-    val List(name, lineNo) = testName.split(':').toList: @unchecked
-    cpg.findings
-      .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == name))
-      .filter(_.keyValuePairs.keyExact(FindingsPass.LineNo).exists(_.value == lineNo))
-      .l
-  }
-
-  override def run(): Result = {
-    initialize() match {
-      case Failure(exception) =>
-        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
-      case Success(benchmarkDir) =>
-        runSecuribenchMicro()
-    }
-  }
-
   /** @return
     *   a map with a key of a file name and line number pair, to a boolean indicating true if a the sink is tainted.
     */
-  private def getExpectedTestOutcomes: Map[String, Boolean] = {
+  protected def getExpectedTestOutcomes: Map[String, Boolean] = {
 
     def splitLine(line: String): Option[String] = {
       line.split(':').toList match {
@@ -117,35 +93,6 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         output.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
     }
     sinkLocations.toMap
-  }
-
-  private def runSecuribenchMicro(): Result = {
-    val inputDir = cpgCreator match {
-      case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
-      case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
-    }
-    cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
-      case Failure(exception) =>
-        logger.error(s"Unable to generate CPG for $benchmarkName", exception)
-        Result()
-      case Success(cpg) =>
-        Using.resource(cpg) { cpg =>
-          setCpg(cpg)
-          val expectedTestOutcomes  = getExpectedTestOutcomes
-          val testResults = expectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .sortBy(_.testName)
-            .l
-          Result(testResults)
-        }
-    }
-  }
-
-  class SecuribenchMicroSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
-    override def sources: Traversal[CfgNode] =
-      cpg.parameter.and(_.index(1), _.method.name("foo"), _.typeFullNameExact("java.lang.Object"))
   }
 
 }

@@ -2,16 +2,16 @@ package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
 import io.joern.benchmarks.formatting.formatterConstructors
-import io.joern.benchmarks.runner.{
-  BenchmarkRunner,
-  IchnaeaRunner,
-  OWASPJavaRunner,
-  SecuribenchMicroRunner,
-  ThoratPythonRunner
-}
+import io.joern.benchmarks.runner.BenchmarkRunner
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
+import io.joern.benchmarks.runner.joern.{
+  IchnaeaJoernRunner,
+  OWASPJavaJoernRunner,
+  SecuribenchMicroJoernRunner,
+  ThoratPythonJoernRunner
+}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -56,15 +56,18 @@ class Benchmark(config: BenchmarkConfig) {
 object Benchmark {
 
   val benchmarkConstructors: Map[AvailableBenchmarks.Value, BenchmarkConfig => BenchmarkRunner] = Map(
-    (AvailableBenchmarks.OWASP_JAVASRC, x => new OWASPJavaRunner(x.datasetDir, JavaSrcCpgCreator())),
-    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaRunner(x.datasetDir, JVMBytecodeCpgCreator())),
-    (AvailableBenchmarks.SECURIBENCH_MICRO_JAVASRC, x => new SecuribenchMicroRunner(x.datasetDir, JavaSrcCpgCreator())),
+    (AvailableBenchmarks.OWASP_JAVASRC, x => new OWASPJavaJoernRunner(x.datasetDir, JavaSrcCpgCreator())),
+    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaJoernRunner(x.datasetDir, JVMBytecodeCpgCreator())),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JAVASRC,
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator())
+    ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO_JAVA,
-      x => new SecuribenchMicroRunner(x.datasetDir, JVMBytecodeCpgCreator())
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator())
     ),
-    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaRunner(x.datasetDir, JsSrcCpgCreator())),
-    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonRunner(x.datasetDir, PySrcCpgCreator()))
+    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator())),
+    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonJoernRunner(x.datasetDir, PySrcCpgCreator()))
   )
 
 }
