@@ -4,12 +4,11 @@ import better.files.File
 import io.joern.benchmarks.Domain.*
 import io.joern.dataflowengineoss.queryengine.EngineContext
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{AstNode, CfgNode, Finding}
+import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.net.URL
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /** A process that runs a benchmark.
   */
@@ -30,7 +29,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     * @return
     *   a list of findings, if any.
     */
-  protected def findings(testName: String)(implicit cpg: Cpg): List[Finding]
+  protected def findings(testName: String): List[Finding]
 
   /** Compares the test expectations against the actual findings.
     * @param testName
@@ -38,7 +37,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     * @param flowExists
     *   the expected outcome for the test.
     */
-  protected def compare(testName: String, flowExists: Boolean)(implicit cpg: Cpg): TestOutcome.Value = {
+  protected def compare(testName: String, flowExists: Boolean): TestOutcome.Value = {
     findings(testName) match {
       case Nil if flowExists => TestOutcome.FN
       case Nil               => TestOutcome.TN
@@ -51,6 +50,24 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     */
   def run(): Result
 
+}
+
+/**
+ * Adds the ability to set and access a CPG during the benchmarks
+ */
+trait CpgBenchmarkRunner { this: BenchmarkRunner =>
+
+  private var cpgOpt: Option[Cpg] = None
+  
+  protected def setCpg(cpg: Cpg): Unit = {
+    cpgOpt = Option(cpg)
+  }
+  
+  protected def cpg: Cpg = cpgOpt match {
+    case Some(cpg) => cpg
+    case None => throw new RuntimeException("No CPG has been set!")
+  }
+  
 }
 
 /** Used to specify benchmark-specific sources and sinks.

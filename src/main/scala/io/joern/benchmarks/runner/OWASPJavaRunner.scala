@@ -21,6 +21,7 @@ import scala.xml.XML
 
 class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
+      with CpgBenchmarkRunner
     with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -37,7 +38,7 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
-  override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
+  override def findings(testName: String): List[Finding] = {
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == testName))
       .l
@@ -73,7 +74,7 @@ class OWASPJavaRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         Result()
       case Success(cpg) =>
         Using.resource(cpg) { cpg =>
-          implicit val cpgImpl: Cpg = cpg
+          setCpg(cpg)
           val testResults = expectedTestOutcomes
             .map { case (testName, outcome) =>
               TestEntry(testName, compare(testName, outcome))

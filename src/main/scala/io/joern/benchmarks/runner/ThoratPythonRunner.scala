@@ -22,6 +22,7 @@ import scala.xml.XML
 
 class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
+      with CpgBenchmarkRunner
     with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -40,7 +41,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     else Try(benchmarkBaseDir)
   }
 
-  override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
+  override def findings(testName: String): List[Finding] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.FileName).exists(_.value == name))
@@ -93,7 +94,7 @@ class ThoratPythonRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
             Result()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
-              implicit val cpgImpl: Cpg = cpg
+              setCpg(cpg)
               val testName              = testDir.name
               // TODO: Check for negatives/excluded findings
               val results = expectedTestOutcomes.collect {

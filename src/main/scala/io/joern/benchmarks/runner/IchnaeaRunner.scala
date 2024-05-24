@@ -9,7 +9,6 @@ import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
-import io.shiftleft.semanticcpg.language.operatorextension.OpNodes.FieldAccess
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -18,6 +17,7 @@ import scala.util.{Failure, Success, Try, Using}
 
 class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
+      with CpgBenchmarkRunner
     with MultiFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -73,7 +73,7 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.TGZ)
 
-  override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
+  override def findings(testName: String): List[Finding] = {
     cpg.findings.l
   }
 
@@ -105,7 +105,8 @@ class IchnaeaRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
             Result()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
-              if cpg.findings.size > 0 then Result(TestEntry(packageName, TestOutcome.TP) :: Nil)
+              setCpg(cpg)
+              if cpg.findings.nonEmpty then Result(TestEntry(packageName, TestOutcome.TP) :: Nil)
               else Result(TestEntry(packageName, TestOutcome.FN) :: Nil)
             }
         }

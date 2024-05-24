@@ -23,6 +23,7 @@ import scala.xml.XML
 
 class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends BenchmarkRunner(datasetDir)
+      with CpgBenchmarkRunner
     with SingleFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -69,7 +70,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     benchmarkBaseDir
   }
 
-  override def findings(testName: String)(implicit cpg: Cpg): List[Finding] = {
+  override def findings(testName: String): List[Finding] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == name))
@@ -129,7 +130,7 @@ class SecuribenchMicroRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         Result()
       case Success(cpg) =>
         Using.resource(cpg) { cpg =>
-          implicit val cpgImpl: Cpg = cpg
+          setCpg(cpg)
           val expectedTestOutcomes  = getExpectedTestOutcomes
           val testResults = expectedTestOutcomes
             .map { case (testName, outcome) =>
