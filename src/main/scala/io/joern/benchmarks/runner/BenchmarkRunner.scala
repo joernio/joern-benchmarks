@@ -52,23 +52,6 @@ trait BenchmarkRunner(protected val datasetDir: File) {
 
 }
 
-/** Adds the ability to set and access a CPG during the benchmarks
-  */
-trait CpgBenchmarkRunner { this: BenchmarkRunner =>
-
-  private var cpgOpt: Option[Cpg] = None
-
-  protected def setCpg(cpg: Cpg): Unit = {
-    cpgOpt = Option(cpg)
-  }
-
-  protected def cpg: Cpg = cpgOpt match {
-    case Some(cpg) => cpg
-    case None      => throw new RuntimeException("No CPG has been set!")
-  }
-
-}
-
 /** Used to specify benchmark-specific sources and sinks.
   */
 trait BenchmarkSourcesAndSinks {

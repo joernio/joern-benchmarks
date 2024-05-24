@@ -5,15 +5,12 @@ import com.github.sh4869.semver_parser.{Range, SemVer}
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
-import io.joern.benchmarks.runner.{IchnaeaRunner, *}
+import io.joern.benchmarks.runner.*
 import io.joern.dataflowengineoss.language.*
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.semanticcpg.language.*
-import org.slf4j.LoggerFactory
-import upickle.default.*
 
-import java.net.{URI, URL}
 import scala.util.{Failure, Success, Try, Using}
 
 class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
