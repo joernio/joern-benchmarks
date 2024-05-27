@@ -4,8 +4,6 @@ import better.files.File
 import io.joern.benchmarks.Domain
 import io.joern.benchmarks.Domain.{Result, TestEntry}
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroRunner}
-import io.joern.benchmarks.runner.semgrep.SemGrepBenchmarkRunner.SemGrepTrace
-import io.shiftleft.codepropertygraph.generated.nodes.Finding
 
 import scala.util.{Failure, Success}
 
@@ -17,11 +15,7 @@ class SecuribenchMicroSemGrepRunner(datasetDir: File)
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     sgResults.results
       .filter { result =>
-        result.path.stripSuffix(".java").endsWith(name)
-      }
-      .flatMap(_.extra.dataflowTrace)
-      .filter { case SemGrepTrace((_, (sinkLocation, sinkCode)), _) =>
-        sinkLocation.start.line == lineNo.toInt
+        result.path.stripSuffix(".java").endsWith(name) && result.start.line == lineNo.toInt
       }
       .map(_ => FindingInfo())
       .toList

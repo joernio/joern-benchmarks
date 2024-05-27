@@ -22,6 +22,7 @@ object AvailableBenchmarks extends Enumeration {
 
   // SemGrep
   val SECURIBENCH_MICRO_SEMGREP = Value
+  val THORAT_SEMGREP            = Value
 }
 
 object OutputFormat extends Enumeration {
