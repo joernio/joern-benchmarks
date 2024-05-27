@@ -16,11 +16,12 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     extends ThoratPythonRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
-  override def findings(testName: String): List[Finding] = {
+  override def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.FileName).exists(_.value == name))
       .filter(_.keyValuePairs.keyExact(FindingsPass.LineNo).exists(_.value == lineNo))
+      .map(mapToFindingInfo)
       .l
   }
 

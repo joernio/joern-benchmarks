@@ -5,7 +5,7 @@ import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.JavaCpgCreator
 import io.joern.benchmarks.passes.FindingsPass
-import io.joern.benchmarks.runner.OWASPJavaRunner
+import io.joern.benchmarks.runner.{FindingInfo, OWASPJavaRunner}
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.Finding
 import io.shiftleft.semanticcpg.language.*
@@ -16,9 +16,10 @@ class OWASPJavaJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends OWASPJavaRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
-  override def findings(testName: String): List[Finding] = {
+  override def findings(testName: String): List[FindingInfo] = {
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == testName))
+      .map(mapToFindingInfo)
       .l
   }
 

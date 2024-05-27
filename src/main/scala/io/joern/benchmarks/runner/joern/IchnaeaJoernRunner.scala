@@ -17,8 +17,8 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     extends IchnaeaRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
-  override def findings(testName: String): List[Finding] = {
-    cpg.findings.l
+  override def findings(testName: String): List[FindingInfo] = {
+    cpg.findings.map(mapToFindingInfo).l
   }
 
   override def run(): Result = {

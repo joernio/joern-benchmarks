@@ -12,6 +12,17 @@ import scala.util.{Failure, Success, Try}
   */
 trait SemGrepBenchmarkRunner { this: BenchmarkRunner =>
 
+  private var resultsOpt: Option[SemGrepFindings] = None
+
+  protected def setResults(results: SemGrepFindings): Unit = {
+    resultsOpt = Option(results)
+  }
+
+  protected def sgResults: SemGrepFindings = resultsOpt match {
+    case Some(results) => results
+    case None          => throw new RuntimeException("No results have been set!")
+  }
+
   protected def runScan(inputDir: File): Try[SemGrepFindings] = {
     val command = Seq("semgrep", "scan", "--no-git-ignore", s"--json", "-q", inputDir.pathAsString).mkString(" ")
     ExternalCommand.run(command, ".") match {

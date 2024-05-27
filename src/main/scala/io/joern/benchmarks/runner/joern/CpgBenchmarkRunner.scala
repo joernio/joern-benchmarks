@@ -1,7 +1,8 @@
 package io.joern.benchmarks.runner.joern
 
-import io.joern.benchmarks.runner.BenchmarkRunner
+import io.joern.benchmarks.runner.{BenchmarkRunner, FindingInfo}
 import io.shiftleft.codepropertygraph.generated.Cpg
+import io.shiftleft.codepropertygraph.generated.nodes.Finding
 
 /** Adds the ability to set and access a CPG during the benchmarks
   */
@@ -16,6 +17,10 @@ trait CpgBenchmarkRunner { this: BenchmarkRunner =>
   protected def cpg: Cpg = cpgOpt match {
     case Some(cpg) => cpg
     case None      => throw new RuntimeException("No CPG has been set!")
+  }
+
+  protected def mapToFindingInfo(finding: Finding): FindingInfo = {
+    FindingInfo()
   }
 
 }

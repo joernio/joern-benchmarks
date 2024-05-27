@@ -3,8 +3,7 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.Domain.*
 import io.joern.dataflowengineoss.queryengine.EngineContext
-import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
+import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
 import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -29,7 +28,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     * @return
     *   a list of findings, if any.
     */
-  protected def findings(testName: String): List[Finding]
+  protected def findings(testName: String): List[FindingInfo]
 
   /** Compares the test expectations against the actual findings.
     * @param testName
@@ -68,3 +67,5 @@ trait BenchmarkSourcesAndSinks {
 }
 
 class DefaultBenchmarkSourcesAndSinks extends BenchmarkSourcesAndSinks
+
+case class FindingInfo()

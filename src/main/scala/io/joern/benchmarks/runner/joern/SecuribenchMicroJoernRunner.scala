@@ -16,11 +16,12 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
     extends SecuribenchMicroRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
-  override def findings(testName: String): List[Finding] = {
+  override def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     cpg.findings
       .filter(_.keyValuePairs.keyExact(FindingsPass.SurroundingType).exists(_.value == name))
       .filter(_.keyValuePairs.keyExact(FindingsPass.LineNo).exists(_.value == lineNo))
+      .map(mapToFindingInfo)
       .l
   }
 
