@@ -3,24 +3,11 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JavaCpgCreator, JsSrcCpgCreator, PythonCpgCreator}
-import io.joern.benchmarks.passes.{FindingsPass, JavaTaggingPass}
-import io.joern.benchmarks.runner.*
-import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
-import io.joern.javasrc2cpg.{Config, JavaSrc2Cpg}
-import io.joern.x2cpg.X2CpgFrontend
-import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
-import io.shiftleft.semanticcpg.language.*
-import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
-import java.io.FileOutputStream
-import java.net.{HttpURLConnection, URI, URL}
-import scala.collection.mutable
-import scala.util.{Failure, Success, Try, Using}
-import scala.xml.XML
+import java.net.{URI, URL}
+import scala.util.Try
 
 abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)

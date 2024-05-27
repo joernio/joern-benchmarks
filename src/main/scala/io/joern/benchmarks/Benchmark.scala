@@ -12,6 +12,7 @@ import io.joern.benchmarks.runner.joern.{
   SecuribenchMicroJoernRunner,
   ThoratPythonJoernRunner
 }
+import io.joern.benchmarks.runner.semgrep.{SecuribenchMicroSemGrepRunner, ThoratPythonSemGrepRunner}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -67,7 +68,9 @@ object Benchmark {
       x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator())
     ),
     (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator())),
-    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonJoernRunner(x.datasetDir, PySrcCpgCreator()))
+    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonJoernRunner(x.datasetDir, PySrcCpgCreator())),
+    (AvailableBenchmarks.SECURIBENCH_MICRO_SEMGREP, x => new SecuribenchMicroSemGrepRunner(x.datasetDir)),
+    (AvailableBenchmarks.THORAT_SEMGREP, x => new ThoratPythonSemGrepRunner(x.datasetDir))
   )
 
 }

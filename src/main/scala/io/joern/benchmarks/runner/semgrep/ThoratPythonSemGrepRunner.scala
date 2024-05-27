@@ -1,4 +1,4 @@
-package io.joern.benchmarks.runner.joern
+package io.joern.benchmarks.runner.semgrep
 
 import better.files.File
 import io.joern.benchmarks.*
@@ -6,23 +6,27 @@ import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.PythonCpgCreator
 import io.joern.benchmarks.passes.FindingsPass
 import io.joern.benchmarks.runner.*
+import io.joern.benchmarks.runner.semgrep.SemGrepBenchmarkRunner.SemGrepTrace
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
-    extends ThoratPythonRunner(datasetDir, cpgCreator.frontend)
-    with CpgBenchmarkRunner {
+class ThoratPythonSemGrepRunner(datasetDir: File)
+    extends ThoratPythonRunner(datasetDir, SemGrepBenchmarkRunner.CreatorLabel)
+    with SemGrepBenchmarkRunner {
 
   override def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
-    cpg.findings
-      .filter(_.keyValuePairs.keyExact(FindingsPass.FileName).exists(_.value == name))
-      .filter(_.keyValuePairs.keyExact(FindingsPass.LineNo).exists(_.value == lineNo))
-      .map(mapToFindingInfo)
-      .l
+    val res                = sgResults.results
+    val filter = sgResults.results
+      .filter { result =>
+        result.path.endsWith(name) && result.start.line == lineNo.toInt
+      }
+      .map(_ => FindingInfo())
+      .toList
+    filter
   }
 
   override def run(): Result = {
@@ -37,36 +41,21 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
 
   private def runThorat(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-    val result = (benchmarkBaseDir / "tests").list
-      .filter(_.isDirectory)
-      .map { testDir =>
-        cpgCreator.createCpg(testDir, cpg => ThoratSourcesAndSinks(cpg)) match {
-          case Failure(exception) =>
-            logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
-            Result()
-          case Success(cpg) =>
-            Using.resource(cpg) { cpg =>
-              setCpg(cpg)
-              val testName = testDir.name
-              // TODO: Check for negatives/excluded findings
-              val results = expectedTestOutcomes.collect {
-                case (testFullName, outcome) if testFullName.startsWith(testName) =>
-                  TestEntry(testFullName, compare(testFullName, outcome))
-              }.toList
-              Result(results)
-            }
-        }
-      }
-      .foldLeft(Result())(_ ++ _)
-    val leftoverResults =
-      expectedTestOutcomes
-        .filter { case (name, outcome) => !result.entries.exists(x => name.startsWith(x.testName)) }
-        .map {
-          case (name, false) => TestEntry(name, TestOutcome.TN)
-          case (name, true)  => TestEntry(name, TestOutcome.FN)
-        }
-        .l
-    result.copy(entries = result.entries ++ leftoverResults)
+
+    runScan(benchmarkBaseDir / "tests", Seq("--include=*.py")) match {
+      case Failure(exception) =>
+        logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
+        Domain.Result()
+      case Success(semgrepResults) =>
+        setResults(semgrepResults)
+        val testResults = expectedTestOutcomes
+          .map { case (testName, outcome) =>
+            TestEntry(testName, compare(testName, outcome))
+          }
+          .toList
+          .sortBy(_.testName)
+        Domain.Result(testResults)
+    }
   }
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
