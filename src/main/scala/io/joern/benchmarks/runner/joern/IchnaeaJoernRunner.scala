@@ -32,7 +32,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
   }
 
   private def runIchnaea(): Result = {
-    packageNameAndVersion.keys
+    packageNames
       .map { packageName =>
         val inputDir = benchmarkBaseDir / packageName / "package"
         cpgCreator.createCpg(inputDir, cpg => IchnaeaSourcesAndSinks(cpg)) match {

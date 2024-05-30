@@ -12,15 +12,41 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
     with MultiFileDownloader {
 
+  private val version     = "0.2.0"
+  private val packageName = "ichnaea"
+
   override val benchmarkName = s"Ichnaea $creatorLabel"
 
-  protected val packageNameAndVersion: Map[String, String] = Map("ichnaea" -> "0.2.0")
+  protected val packageNames: List[String] = List(
+    "chook-growl-reporter",
+    "cocos-utils",
+    "gm",
+    "fish",
+    "git2json",
+    "growl",
+    "libnotify",
+    "m-log",
+    "mixin-pro",
+    "modulify",
+    "mongo-parse",
+    "mongoosemask",
+    "mongoosify",
+    "node-os-utils",
+    "node-wos",
+    "office-converter",
+    "os-uptime",
+    "osenv",
+    "pidusage",
+    "pomelo-monitor",
+    "system-locale",
+    "systeminformation"
+  )
 
-  override protected val benchmarkUrls: Map[String, URL] = packageNameAndVersion.map { case (packageName, version) =>
-    packageName -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
-  }
+  override protected val benchmarkUrls: Map[String, URL] = Map(
+    "ichnaea" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
+  )
 
-  override protected val benchmarkDirName: String = ""
+  override protected val benchmarkDirName: String = "ichnaea"
   override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
@@ -30,7 +56,7 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     */
   protected def getExpectedTestOutcomes: Map[String, Boolean] = {
     // All packages in this dataset have a tainted sink `exec`/`eval`/`execSync`/`execFileSync`
-    packageNameAndVersion.keys.map { packageName => packageName -> true }.toMap
+    packageNames.map { packageName => packageName -> true }.toMap
   }
 
   implicit val urlRw: ReadWriter[URL] = readwriter[ujson.Value]
