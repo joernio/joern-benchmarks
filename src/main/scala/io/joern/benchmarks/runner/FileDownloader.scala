@@ -28,6 +28,7 @@ sealed trait FileDownloader { this: BenchmarkRunner =>
   protected def downloadFile(url: URL, destFile: File): Try[File] = Try {
     if (destFile.notExists) {
       destFile.parent.createDirectoryIfNotExists(true)
+      println(s"destFile: ${destFile.pathAsString}")
       var connection: Option[HttpURLConnection] = None
       try {
         connection = Option(url.openConnection().asInstanceOf[HttpURLConnection])
@@ -124,6 +125,7 @@ trait MultiFileDownloader extends FileDownloader { this: BenchmarkRunner =>
   override def downloadBenchmarkAndUnarchive(compressionType: CompressionTypes.Value): Try[File] = Try {
     benchmarkUrls.foreach { case (fileName, url) =>
       val targetDir = benchmarkBaseDir / fileName
+      println(s"Target Dir: ${targetDir.pathAsString}")
       // TODO: Make sure dir goes to `benchmarkBaseDir / benchmarkDirName / fileName`
       if (!targetDir.isDirectory) {
         downloadFileAndUnarchive(url, targetDir, compressionType)

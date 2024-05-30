@@ -1,20 +1,12 @@
 package io.joern.benchmarks.runner
 
 import better.files.File
-import com.github.sh4869.semver_parser.{Range, SemVer}
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.JavaScriptCpgCreator
-import io.joern.benchmarks.runner.*
-import io.joern.dataflowengineoss.language.*
-import io.shiftleft.codepropertygraph.generated.nodes.*
-import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
-import io.shiftleft.semanticcpg.language.*
-import org.slf4j.{Logger, LoggerFactory}
 import upickle.default.*
 
 import java.net.{URI, URL}
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{Try, Using}
 
 abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
@@ -22,55 +14,16 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
 
   override val benchmarkName = s"Ichnaea $creatorLabel"
 
-  protected val packageNameAndVersion: Map[String, String] = Map(
-    "chook-growl-reporter" -> "0.0.1",
-    "cocos-utils"          -> "1.0.0",
-    "gm"                   -> "1.20.0",
-    "fish"                 -> "0.0.0",
-    "git2json"             -> "0.0.1",
-    "growl"                -> "1.9.2",
-    "libnotify"            -> "1.0.3",
-    "m-log"                -> "0.0.1",
-    "mixin-pro"            -> "0.6.6",
-    "modulify"             -> "0.1.0-1",
-    "mongo-parse"          -> "1.0.5",
-    "mongoosemask"         -> "0.0.6",
-    "mongoosify"           -> "0.0.3",
-    "node-os-utils"        -> "1.0.7",
-    "node-wos"             -> "0.2.3",
-    "office-converter"     -> "1.0.2",
-    "os-uptime"            -> "2.0.1",
-    "osenv"                -> "0.1.5",
-    "pidusage"             -> "1.1.4",
-    "pomelo-monitor"       -> "0.3.7",
-    "system-locale"        -> "0.1.0",
-    "systeminformation"    -> "3.42.2"
-  )
+  protected val packageNameAndVersion: Map[String, String] = Map("ichnaea" -> "0.2.0")
 
-  override protected val benchmarkUrls: Map[String, URL] = packageNameAndVersion.flatMap {
-    case (packageName, version) =>
-      parsePackageArtifactUrl(createNpmJsLookup(packageName, version)) match {
-        case Success(distUrl) => Option(packageName -> distUrl)
-        case Failure(exception) =>
-          logger.error(s"Unable to determine module artifact for $packageName@$version", exception)
-          None
-      }
+  override protected val benchmarkUrls: Map[String, URL] = packageNameAndVersion.map { case (packageName, version) =>
+    packageName -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
   }
 
-  override protected val benchmarkDirName: String = "ichnaea"
+  override protected val benchmarkDirName: String = ""
   override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName
 
-  private def createNpmJsLookup(packageName: String, version: String): URL = URI(
-    s"https://registry.npmjs.com/$packageName/$version"
-  ).toURL
-
-  private def parsePackageArtifactUrl(registryUrl: URL): Try[URL] = Try {
-    Using.resource(registryUrl.openStream()) { is =>
-      read[NPMRegistryResponse](ujson.Readable.fromByteArray(is.readAllBytes())).dist.tarball
-    }
-  }
-
-  override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.TGZ)
+  override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
   /** @return
     *   a map with a key of a file name and line number pair, to a boolean indicating true if a the sink is tainted.
