@@ -123,7 +123,10 @@ trait MultiFileDownloader extends FileDownloader { this: BenchmarkRunner =>
 
   override def downloadBenchmarkAndUnarchive(compressionType: CompressionTypes.Value): Try[File] = Try {
     benchmarkUrls.foreach { case (fileName, url) =>
-      val targetDir = benchmarkBaseDir / fileName
+      val targetDir =
+        // TODO: Temporary fix until all the benchmarks are being downloaded from the datasets repo
+        if fileName == "ichnaea" then benchmarkBaseDir
+        else benchmarkBaseDir / fileName
       // TODO: Make sure dir goes to `benchmarkBaseDir / benchmarkDirName / fileName`
       if (!targetDir.isDirectory) {
         downloadFileAndUnarchive(url, targetDir, compressionType)
