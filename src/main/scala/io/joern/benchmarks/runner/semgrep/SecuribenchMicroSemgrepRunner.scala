@@ -6,7 +6,7 @@ import io.joern.benchmarks.Domain.{Result, TestEntry}
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroRunner}
 import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Using}
 
 class SecuribenchMicroSemgrepRunner(datasetDir: File)
     extends SecuribenchMicroRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
@@ -17,14 +17,28 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
     sgResults.results
       .flatMap(_.extra.dataflowTrace)
       .filter { case SemGrepTrace((_, (sinkLoc, _)), _) =>
-        sinkLoc.path.stripSuffix(".java").endsWith(name) && sinkLoc.start.line == lineNo.toInt
+        sinkLoc.path.stripSuffix(".java").endsWith(name) && sinkLoc.end.line == lineNo.toInt
       }
       .map(_ => FindingInfo())
       .toList
   }
 
   override def run(): Domain.Result = {
-    runScan(benchmarkBaseDir) match {
+    val rules = Option(getClass.getResourceAsStream("/semgrep/SecuribenchMicroRules.yaml")) match {
+      case Some(res) =>
+        Using.resource(res) { is =>
+          Option {
+            File
+              .newTemporaryFile("joern-benchmarks-semrep-", ".yaml")
+              .deleteOnExit(swallowIOExceptions = true)
+              .writeByteArray(is.readAllBytes())
+          }
+        }
+      case None =>
+        logger.error(s"Unable to fetch Semgrep rules for $benchmarkName")
+        None
+    }
+    runScan(benchmarkBaseDir, Seq.empty, rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
         Domain.Result()

@@ -55,6 +55,7 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
         "scan",
         "--no-git-ignore",
         "--json",
+        "--config auto",
         "-q"
       ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString)
         .mkString(" ")
