@@ -32,6 +32,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
   }
 
   private def runIchnaea(): Result = {
+    val outcomes = getExpectedTestOutcomes
     packageNames
       .map { packageName =>
         val inputDir = benchmarkBaseDir / packageName / "package"
@@ -42,8 +43,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
               setCpg(cpg)
-              if cpg.findings.nonEmpty then Result(TestEntry(packageName, TestOutcome.TP) :: Nil)
-              else Result(TestEntry(packageName, TestOutcome.FN) :: Nil)
+              Result(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
             }
         }
       }

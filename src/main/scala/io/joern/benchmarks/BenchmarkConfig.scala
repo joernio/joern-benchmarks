@@ -20,9 +20,10 @@ object AvailableBenchmarks extends Enumeration {
   val ICHNAEA_JSSRC             = Value
   val THORAT_PYSRC              = Value
 
-  // SemGrep
+  // Semgrep
   val SECURIBENCH_MICRO_SEMGREP = Value
   val THORAT_SEMGREP            = Value
+  val ICHNAEA_SEMGREP           = Value
 }
 
 object OutputFormat extends Enumeration {

@@ -4,18 +4,20 @@ import better.files.File
 import io.joern.benchmarks.Domain
 import io.joern.benchmarks.Domain.{Result, TestEntry}
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroRunner}
+import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 
 import scala.util.{Failure, Success}
 
-class SecuribenchMicroSemGrepRunner(datasetDir: File)
-    extends SecuribenchMicroRunner(datasetDir, SemGrepBenchmarkRunner.CreatorLabel)
-    with SemGrepBenchmarkRunner {
+class SecuribenchMicroSemgrepRunner(datasetDir: File)
+    extends SecuribenchMicroRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
+    with SemgrepBenchmarkRunner {
 
   override protected def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     sgResults.results
-      .filter { result =>
-        result.path.stripSuffix(".java").endsWith(name) && result.start.line == lineNo.toInt
+      .flatMap(_.extra.dataflowTrace)
+      .filter { case SemGrepTrace((_, (sinkLoc, _)), _) =>
+        sinkLoc.path.stripSuffix(".java").endsWith(name) && sinkLoc.start.line == lineNo.toInt
       }
       .map(_ => FindingInfo())
       .toList

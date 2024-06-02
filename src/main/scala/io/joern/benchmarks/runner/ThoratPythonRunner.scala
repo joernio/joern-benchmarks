@@ -15,7 +15,7 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val version        = "0.0.4"
+  private val version        = "0.0.5"
   override val benchmarkName = s"Thorat Python v$version $creatorLabel"
 
   override protected val benchmarkUrl: URL = URI(
