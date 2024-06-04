@@ -27,33 +27,29 @@ class JavaTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(impli
   }
 
   override def defaultSinks: Iterator[CfgNode] = {
-    cpg.method
+    (cpg.method
       .filter(_.fullName.startsWith("java.io.File"))
-      .nameExact(Defines.ConstructorMethodName, "write", "createNewFile")
-      .parameter
-      .argument ++
+      .nameExact(Defines.ConstructorMethodName, "write", "createNewFile") ++
       cpg.method
         .filter(_.fullName.startsWith("java.io.PrintWriter"))
-        .nameExact("print", "println")
-        .parameter
-        .argument ++
+        .nameExact("print", "println") ++
       cpg.method
         .filter(_.fullName.startsWith("java.sql.Connection"))
-        .nameExact("prepareStatement")
-        .parameter
-        .argument
-        .where(_.argumentIndex(1)) ++
+        .nameExact("prepareStatement") ++
       cpg.method
         .filter(_.fullName.startsWith("java.sql.Statement"))
-        .nameExact("execute", "executeUpdate", "executeQuery")
-        .parameter
-        .argument
-        .where(_.argumentIndex(1)) ++
+        .nameExact("execute", "executeUpdate", "executeQuery") ++
       cpg.method
-        .filter(_.fullName.startsWith("javax.servlet.http.HttpServletResponse.sendRedirect"))
-        .parameter
-        .argument
-        .where(_.argumentIndex(1))
+        .filter(_.fullName.startsWith("javax.servlet.http.HttpServletResponse"))
+        .nameExact("sendRedirect") ++
+      cpg.method
+        .filter(_.fullName.startsWith("java.io.FileInputStream"))
+        .nameExact(Defines.ConstructorMethodName) ++
+      cpg.method
+        .filter(_.fullName.startsWith("java.io.FileWriter"))
+        .nameExact(Defines.ConstructorMethodName) 
+      ).parameter.argument
+      .where(_.argumentIndex(1))
   }
 
 }
