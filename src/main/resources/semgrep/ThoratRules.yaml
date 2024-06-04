@@ -13,29 +13,9 @@ rules:
         by-side-effect: true
     pattern-sinks:
       - patterns:
-          - pattern-either:
-              - pattern: eval(...)
-              - pattern: lambda_function(...)
+          - pattern: eval(...)
 
   - id: thorat-taint-rules-2
-    languages: [python]
-    severity: ERROR
-    message: "Attacker-controlled getter to some sink"
-    options:
-      interfile: true
-    mode: taint
-    pattern-sources:
-      - patterns:
-        - pattern: $CMD = lambda_function(...)
-        - focus-metavariable: $CMD
-        by-side-effect: true
-    pattern-sinks:
-      - patterns:
-          - pattern-either:
-              - pattern: eval(...)
-              - pattern: lambda_function(...)
-
-  - id: thorat-taint-rules-3
     languages: [python]
     severity: ERROR
     message: "Attacker-controlled getter to some sink"
@@ -49,11 +29,9 @@ rules:
         by-side-effect: true
     pattern-sinks:
       - patterns:
-          - pattern-either:
-              - pattern: eval(...)
-              - pattern: lambda_function(...)
+          - pattern: eval(...)
 
-  - id: thorat-taint-rules-4
+  - id: thorat-taint-rules-3
     languages: [python]
     severity: ERROR
     message: "Attacker-controlled getter to some sink"
@@ -65,6 +43,4 @@ rules:
           - pattern: $SOURCE.get(...)
     pattern-sinks:
       - patterns:
-          - pattern-either:
-              - pattern: eval(...)
-              - pattern: lambda_function(...)
+          - pattern: eval(...)

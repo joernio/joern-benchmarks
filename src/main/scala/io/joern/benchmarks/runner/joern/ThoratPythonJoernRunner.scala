@@ -35,7 +35,7 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     }
   }
 
-  private def runThorat(): Result = {
+  private def runThorat(): Result = recordTime(() => {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val result = (benchmarkBaseDir / "tests").list
       .filter(_.isDirectory)
@@ -67,7 +67,7 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
         }
         .l
     result.copy(entries = result.entries ++ leftoverResults)
-  }
+  })
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 

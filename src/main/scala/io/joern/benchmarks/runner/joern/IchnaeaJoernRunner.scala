@@ -31,7 +31,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     }
   }
 
-  private def runIchnaea(): Result = {
+  private def runIchnaea(): Result = recordTime(() => {
     val outcomes = getExpectedTestOutcomes
     packageNames
       .map { packageName =>
@@ -48,7 +48,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         }
       }
       .foldLeft(Result())(_ ++ _)
-  }
+  })
 
   class IchnaeaSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 

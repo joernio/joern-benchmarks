@@ -35,7 +35,7 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
     }
   }
 
-  private def runSecuribenchMicro(): Result = {
+  private def runSecuribenchMicro(): Result = recordTime(() => {
     val inputDir = cpgCreator match {
       case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
       case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
@@ -57,7 +57,7 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
           Result(testResults)
         }
     }
-  }
+  })
 
   class SecuribenchMicroSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
     override def sources: Traversal[CfgNode] =

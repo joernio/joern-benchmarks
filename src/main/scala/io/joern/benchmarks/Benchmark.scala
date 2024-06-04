@@ -36,12 +36,12 @@ class Benchmark(config: BenchmarkConfig) {
       val benchmarkName   = benchmarkRunner.benchmarkName
       logger.info(s"Running $benchmarkName")
       benchmarkRunner.run() match {
-        case Result(Nil) => logger.warn(s"Empty results for $benchmarkName")
+        case Result(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
           formatterConstructors
             .get(config.outputFormat)
             .foreach(
-              _.apply(result)
+              _.apply(result.copy(time = benchmarkRunner.timeSeconds))
                 .writeTo(
                   config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
                 )

@@ -44,7 +44,7 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
     inputDir: File,
     customCommands: Seq[String],
     customRuleFile: Option[File]
-  ): Try[SemGrepFindings] = {
+  ): Try[SemGrepFindings] = recordTime(() => {
     val customRulePath = customRuleFile match {
       case Some(f) => s"--config ${f.pathAsString}"
       case None    => ""
@@ -66,7 +66,7 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
       case Success(lines) =>
         Try(read[SemGrepFindings](lines.mkString("\n")))
     }
-  }
+  })
 
 }
 
