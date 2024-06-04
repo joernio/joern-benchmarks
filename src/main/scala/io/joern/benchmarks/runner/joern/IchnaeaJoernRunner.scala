@@ -53,7 +53,6 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
   class IchnaeaSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
     override def sources: Iterator[CfgNode] = {
-      val growlSource = cpg.method.nameExact("growl").parameter
       // Many libraries export functions which we consider the parameters of to be "attacker-controlled".
       val exposeFunctionSink = cpg.method
         .nameExact(Operators.indexAccess, Operators.fieldAccess)
@@ -72,8 +71,14 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         .referencedMethod
         .l
 
-      // TODO: func.utils.foo = function() {} not detected
-      val fieldsOfExposedObjects = exposedObjectsSource
+      // e.g. func.utils.foo = function() {}; module.exports = func
+      val fieldsOfExposedObjects = cpg.fieldAccess
+        .where(_.argument(1).code(exposeFunctionSink.isIdentifier.map(x => s"${x.code}.*").toSeq*))
+        .inAssignment
+        .source
+        .isMethodRef
+        .referencedMethod
+        .l
 
       def findExposedMethods(m: Method): Iterator[Method] = {
         val assignedMethodRefs = m.assignment.source.isMethodRef
@@ -105,7 +110,8 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
           .flatMap(findExposedMethods)
           .l
 
-      val allExposedMethods = (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject).l
+      val allExposedMethods =
+        (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject ++ fieldsOfExposedObjects).l
       val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to dot his yet
         .collectAll[MethodRef]
         .outE("CAPTURE")
