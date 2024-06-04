@@ -6,7 +6,7 @@ import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepFindings
 import io.joern.x2cpg.utils.ExternalCommand
 import upickle.default.*
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try, Using}
 
 /** Facilitates the execution and parsing of SemGrep results.
   */
@@ -67,6 +67,23 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
         Try(read[SemGrepFindings](lines.mkString("\n")))
     }
   })
+
+  protected def getRules(ruleName: String): Option[File] = {
+    Option(getClass.getResourceAsStream(s"/semgrep/$ruleName.yaml")) match {
+      case Some(res) =>
+        Using.resource(res) { is =>
+          Option {
+            File
+              .newTemporaryFile("joern-benchmarks-semrep-", ".yaml")
+              .deleteOnExit(swallowIOExceptions = true)
+              .writeByteArray(is.readAllBytes())
+          }
+        }
+      case None =>
+        logger.error(s"Unable to fetch Semgrep rules for $benchmarkName")
+        None
+    }
+  }
 
 }
 

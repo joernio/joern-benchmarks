@@ -48,6 +48,11 @@ class JavaTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(impli
         .nameExact("execute", "executeUpdate", "executeQuery")
         .parameter
         .argument
+        .where(_.argumentIndex(1)) ++
+      cpg.method
+        .filter(_.fullName.startsWith("javax.servlet.http.HttpServletResponse.sendRedirect"))
+        .parameter
+        .argument
         .where(_.argumentIndex(1))
   }
 

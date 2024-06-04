@@ -40,20 +40,7 @@ class ThoratPythonSemgrepRunner(datasetDir: File)
 
   private def runThorat(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-    val rules = Option(getClass.getResourceAsStream("/semgrep/ThoratRules.yaml")) match {
-      case Some(res) =>
-        Using.resource(res) { is =>
-          Option {
-            File
-              .newTemporaryFile("joern-benchmarks-semrep-", ".yaml")
-              .deleteOnExit(swallowIOExceptions = true)
-              .writeByteArray(is.readAllBytes())
-          }
-        }
-      case None =>
-        logger.error(s"Unable to fetch Semgrep rules for $benchmarkName")
-        None
-    }
+    val rules                = getRules("ThoratRules")
     runScan(benchmarkBaseDir / "tests", Seq("--include=*.py"), rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)

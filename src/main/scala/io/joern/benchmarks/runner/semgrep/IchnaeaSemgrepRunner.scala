@@ -35,10 +35,11 @@ class IchnaeaSemgrepRunner(datasetDir: File)
 
   private def runIchnaea(): Result = {
     val outcomes = getExpectedTestOutcomes
+    val rules    = getRules("IchnaeaRules")
     packageNames
       .map { packageName =>
         val inputDir = benchmarkBaseDir / packageName
-        runScan(inputDir) match {
+        runScan(inputDir, Seq.empty, rules) match {
           case Failure(exception) =>
             logger.error(s"Error encountered while running `semgrep` on $benchmarkName/$packageName", exception)
             Result()
