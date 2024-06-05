@@ -16,9 +16,9 @@ class IchnaeaSemgrepRunner(datasetDir: File)
     sgResults.results
       .filter(_.hasTrace)
       .flatMap(_.extra.dataflowTrace)
-      .filter { case SemGrepTrace((_, (sinkLoc, code)), _) =>
-        sinkNames.exists(code.contains)
-      }
+//      .filter { case SemGrepTrace((_, (sinkLoc, code)), _) =>
+//        sinkNames.exists(code.contains)
+//      }
       .map(_ => FindingInfo())
       .toList
   }
