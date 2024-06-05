@@ -54,4 +54,3 @@ rules:
             $VAR = require('growl')
             ...
             $VAR(...)
-    # cpg.call.nameExact("growl").argument
