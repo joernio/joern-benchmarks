@@ -21,14 +21,25 @@ A benchmarking suite for Joern
   -f, --format <value>     The output format to write results as. Default is JSON. Available [JSON,CSV,MD]
 ```
 
-## Benchmarks
+## Data-Flow Benchmarks
 
 The benchmark naming convention of `<BENCHMARK>_<FRONTEND>`, e.g. `OWASP_JAVA` runs `OWASP` using the `jimple2cpg`
 frontend (JVM bytecode).
 
-| Benchmark                                                                                      | Status | Enabled Frontends |
-|------------------------------------------------------------------------------------------------|--------|-------------------|
-| [`OWASP`](https://owasp.org/www-project-benchmark/)                                            | WIP    | `JAVASRC`         |
-| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro)                          | WIP    | `JAVASRC` `JAVA`  |
-| [`ICHNAEA`](https://www.franktip.org/pubs/tse2020.pdf)                                         | WIP    | `JSSRC`           |
-| [`THORAT`](https://github.com/DavidBakerEffendi/benchmark-for-taint-analysis-tools-for-python) | WIP    | `PYSRC`           |
+| Benchmark                                                                                      | Status   | Enabled Frontends          |
+|------------------------------------------------------------------------------------------------|----------|----------------------------|
+| [`OWASP`](https://owasp.org/www-project-benchmark/)                                            | WIP      | `JAVASRC`                  |
+| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro)                          | Complete | `JAVASRC` `JAVA` `SEMGREP` |
+| [`ICHNAEA`](https://www.franktip.org/pubs/tse2020.pdf)                                         | Complete      | `JSSRC` `SEMGREP`          |
+| [`THORAT`](https://github.com/DavidBakerEffendi/benchmark-for-taint-analysis-tools-for-python) | Complete      | `PYSRC` `SEMGREP`           |
+
+### Joern
+
+Joern's open-source data-flow engine is enabled whenever a Joern frontend is selected, e.g. `JAVA`, `PYSRC`, etc.
+
+### Semgrep
+
+If `SEMGREP` is selected, this requires an installation of Semgrep where `semgrep scan` will be used to 
+initiate the process. Custom rules specific to benchmarks can be found under `src/main/resources/semgrep`.
+
+Note: Only results with data-flow traces are considered as findings.

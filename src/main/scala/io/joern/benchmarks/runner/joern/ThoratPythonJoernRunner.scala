@@ -35,7 +35,7 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     }
   }
 
-  private def runThorat(): Result = {
+  private def runThorat(): Result = recordTime(() => {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val result = (benchmarkBaseDir / "tests").list
       .filter(_.isDirectory)
@@ -67,7 +67,7 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
         }
         .l
     result.copy(entries = result.entries ++ leftoverResults)
-  }
+  })
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
@@ -86,7 +86,10 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     override def sources: Iterator[CfgNode] = {
       val filenameString = candidates.map(_.fileName).mkString(",")
       sourceCandidates.flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
-        val methodTrav = cpg.method.nameExact(methodName).l
+        val methodTrav = {
+          val m = cpg.method.nameExact(methodName).l
+          m ++ m.astChildren.isMethod.l
+        }
         if (methodTrav.isEmpty) {
           logger.warn(s"Unable to match source method for '$methodName' among [$filenameString]")
           Iterator.empty
@@ -107,7 +110,10 @@ class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     override def sinks: Iterator[CfgNode] = {
       val filenameString = candidates.map(_.fileName).mkString(",")
       sinkCandidates.flatMap { case TAFStatement(_, methodName, _, lineNo, targetName, _) =>
-        val methodTrav = cpg.method.nameExact(methodName).l
+        val methodTrav = {
+          val m = cpg.method.nameExact(methodName).l
+          m ++ m.astChildren.isMethod.l
+        }
         if (methodTrav.isEmpty) {
           logger.warn(s"Unable to match sink method for '$methodName' among [$filenameString]")
           Iterator.empty

@@ -12,7 +12,11 @@ import io.joern.benchmarks.runner.joern.{
   SecuribenchMicroJoernRunner,
   ThoratPythonJoernRunner
 }
-import io.joern.benchmarks.runner.semgrep.{SecuribenchMicroSemGrepRunner, ThoratPythonSemGrepRunner}
+import io.joern.benchmarks.runner.semgrep.{
+  IchnaeaSemgrepRunner,
+  SecuribenchMicroSemgrepRunner,
+  ThoratPythonSemgrepRunner
+}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -32,12 +36,12 @@ class Benchmark(config: BenchmarkConfig) {
       val benchmarkName   = benchmarkRunner.benchmarkName
       logger.info(s"Running $benchmarkName")
       benchmarkRunner.run() match {
-        case Result(Nil) => logger.warn(s"Empty results for $benchmarkName")
+        case Result(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
           formatterConstructors
             .get(config.outputFormat)
             .foreach(
-              _.apply(result)
+              _.apply(result.copy(time = benchmarkRunner.timeSeconds))
                 .writeTo(
                   config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
                 )
@@ -69,8 +73,9 @@ object Benchmark {
     ),
     (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator())),
     (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonJoernRunner(x.datasetDir, PySrcCpgCreator())),
-    (AvailableBenchmarks.SECURIBENCH_MICRO_SEMGREP, x => new SecuribenchMicroSemGrepRunner(x.datasetDir)),
-    (AvailableBenchmarks.THORAT_SEMGREP, x => new ThoratPythonSemGrepRunner(x.datasetDir))
+    (AvailableBenchmarks.SECURIBENCH_MICRO_SEMGREP, x => new SecuribenchMicroSemgrepRunner(x.datasetDir)),
+    (AvailableBenchmarks.THORAT_SEMGREP, x => new ThoratPythonSemgrepRunner(x.datasetDir)),
+    (AvailableBenchmarks.ICHNAEA_SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir))
   )
 
 }

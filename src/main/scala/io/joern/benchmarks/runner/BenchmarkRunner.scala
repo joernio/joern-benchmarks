@@ -7,6 +7,7 @@ import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
 import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.lang
 import scala.util.Try
 
 /** A process that runs a benchmark.
@@ -18,6 +19,21 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   val baseDatasetsUrl: String = "https://github.com/joernio/joern-benchmark-datasets/releases/download"
 
   val benchmarkName: String
+
+  private var totalTime = 0L
+
+  def timeSeconds: Double = {
+    totalTime / 1_000_000_000.0;
+  }
+
+  /** Records the wall clock time taken for the given function to execute.
+    */
+  def recordTime[T](f: () => T): T = {
+    val start  = System.nanoTime()
+    val result = f()
+    totalTime += System.nanoTime() - start
+    result
+  }
 
   /** Create and setup the benchmark if necessary.
     *

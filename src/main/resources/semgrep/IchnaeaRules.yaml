@@ -1,0 +1,56 @@
+rules:
+  - id: ichnaea-taint-rules-1
+    languages: [javascript]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    options:
+      interfile: true
+    mode: taint
+    pattern-sources:
+      - patterns:
+        - pattern-either:
+            - pattern: $MOD.exports = function $FUNC($PARAMS) { ... }
+            - pattern: exports = function $FUNC($PARAMS) { ... }
+            - pattern: exports[$IDX] = function $FUNC($PARAMS) { ... }
+            - pattern: |
+                function $FUNC($PARAMS) { ... }
+                ...
+                exports.$FUNC = $FUNC
+            - pattern: |
+                function $FUNC($PARAMS) { ... }
+                ...
+                $X = $FUNC
+                ...
+                $MOD.exports = $X
+        - focus-metavariable: $FUNC
+        - focus-metavariable: $PARAMS
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+            - pattern: eval(...)
+            - pattern: exec(...)
+            - pattern: execSync(...)
+            - pattern: execFileSync(...)
+
+  - id: vulnerable-growl-version
+    languages: [javascript]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    options:
+      interfile: true
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: $MOD.exports = $FUNC
+              - pattern: exports = $FUNC
+              - pattern: exports[$IDX] = $FUNC
+          - focus-metavariable: $FUNC
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+        - pattern: |
+            $VAR = require('growl')
+            ...
+            $VAR(...)

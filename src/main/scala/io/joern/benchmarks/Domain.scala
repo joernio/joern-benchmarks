@@ -22,7 +22,7 @@ object Domain {
 
   /** The result of a benchmark.
     */
-  case class Result(entries: List[TestEntry] = Nil) {
+  case class Result(entries: List[TestEntry] = Nil, time: Double = 0d) {
 
     /** @return
       *   When a benchmark tests for false/true positives/negatives, this will be the <a

@@ -55,14 +55,16 @@ sealed trait FileDownloader { this: BenchmarkRunner =>
   protected def downloadFileAndUnarchive(url: URL, destFile: File, compressionType: CompressionTypes.Value): Unit = {
     compressionType match {
       case CompressionTypes.ZIP =>
-        downloadFile(url, File(s"${destFile.pathAsString}.zip")) match {
+        val tgtFile = File(s"${destFile.pathAsString}.zip").delete(swallowIOExceptions = true)
+        downloadFile(url, tgtFile) match {
           case Success(f) =>
             f.unzipTo(destFile)
             f.delete(swallowIOExceptions = true)
           case Failure(e) => throw e
         }
       case CompressionTypes.TGZ =>
-        downloadFile(url, File(s"${destFile.pathAsString}.tgz")) match {
+        val tgtFile = File(s"${destFile.pathAsString}.tgz").delete(swallowIOExceptions = true)
+        downloadFile(url, tgtFile) match {
           case Success(f) =>
             val tarball = f.unGzipTo(File(s"${destFile.pathAsString}.tar"))
             tarball.unTarTo(destFile)

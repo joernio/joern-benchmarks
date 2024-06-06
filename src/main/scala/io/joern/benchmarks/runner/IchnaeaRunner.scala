@@ -42,6 +42,8 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     "systeminformation"
   )
 
+  protected val sinkNames: Set[String] = Set("exec", "eval", "execSync", "execFileSync")
+
   override protected val benchmarkUrls: Map[String, URL] = Map(
     "ichnaea" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
   )
@@ -55,8 +57,9 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     *   a map with a key of a file name and line number pair, to a boolean indicating true if a the sink is tainted.
     */
   protected def getExpectedTestOutcomes: Map[String, Boolean] = {
-    // All packages in this dataset have a tainted sink `exec`/`eval`/`execSync`/`execFileSync`
-    packageNames.map { packageName => packageName -> true }.toMap
+    // Most packages in this dataset have a tainted sink `exec`/`eval`/`execSync`/`execFileSync`
+    val nonVulnerableApps = Set("node-wos", "os-uptime", "osenv", "system-locale", "systeminformation")
+    packageNames.map { packageName => packageName -> !nonVulnerableApps.contains(packageName) }.toMap
   }
 
   implicit val urlRw: ReadWriter[URL] = readwriter[ujson.Value]

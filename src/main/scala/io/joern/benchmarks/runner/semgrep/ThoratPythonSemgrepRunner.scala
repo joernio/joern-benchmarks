@@ -3,26 +3,25 @@ package io.joern.benchmarks.runner.semgrep
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.PythonCpgCreator
-import io.joern.benchmarks.passes.FindingsPass
 import io.joern.benchmarks.runner.*
-import io.joern.benchmarks.runner.semgrep.SemGrepBenchmarkRunner.SemGrepTrace
+import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
+import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
 import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class ThoratPythonSemGrepRunner(datasetDir: File)
-    extends ThoratPythonRunner(datasetDir, SemGrepBenchmarkRunner.CreatorLabel)
-    with SemGrepBenchmarkRunner {
+class ThoratPythonSemgrepRunner(datasetDir: File)
+    extends ThoratPythonRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
+    with SemgrepBenchmarkRunner {
 
   override def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
     val res                = sgResults.results
     val filter = sgResults.results
-      .filter { result =>
-        result.path.endsWith(name) && result.start.line == lineNo.toInt
+      .flatMap(_.extra.dataflowTrace)
+      .filter { case SemGrepTrace((_, (sinkLoc, _)), _) =>
+        sinkLoc.path.endsWith(name) && sinkLoc.start.line == lineNo.toInt
       }
       .map(_ => FindingInfo())
       .toList
@@ -41,8 +40,8 @@ class ThoratPythonSemGrepRunner(datasetDir: File)
 
   private def runThorat(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-
-    runScan(benchmarkBaseDir / "tests", Seq("--include=*.py")) match {
+    val rules                = getRules("ThoratRules")
+    runScan(benchmarkBaseDir / "tests", Seq("--include=*.py"), rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
         Domain.Result()

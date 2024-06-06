@@ -2,15 +2,15 @@ package io.joern.benchmarks.runner.semgrep
 
 import better.files.File
 import io.joern.benchmarks.runner.BenchmarkRunner
-import io.joern.benchmarks.runner.semgrep.SemGrepBenchmarkRunner.SemGrepFindings
+import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepFindings
 import io.joern.x2cpg.utils.ExternalCommand
 import upickle.default.*
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try, Using}
 
 /** Facilitates the execution and parsing of SemGrep results.
   */
-trait SemGrepBenchmarkRunner { this: BenchmarkRunner =>
+trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
 
   private var resultsOpt: Option[SemGrepFindings] = None
 
@@ -23,9 +23,41 @@ trait SemGrepBenchmarkRunner { this: BenchmarkRunner =>
     case None          => throw new RuntimeException("No results have been set!")
   }
 
-  protected def runScan(inputDir: File, customCommands: Seq[String] = Seq.empty): Try[SemGrepFindings] = {
+  protected def runScan(
+    inputDir: File,
+    customCommands: Seq[String] = Seq.empty,
+    customRules: Seq[String] = Seq.empty
+  ): Try[SemGrepFindings] = {
+    if (customRules.nonEmpty) {
+      val tmp = File
+        .newTemporaryFile(prefix = "joern-benchmarks-semgrep", suffix = ".yaml")
+        .writeText("rules:\n")
+        .deleteOnExit(swallowIOExceptions = true)
+      customRules.map(rule => tmp.appendText(s"$rule\n"))
+      runScan(inputDir, customCommands, Option(tmp))
+    } else {
+      runScan(inputDir, customCommands, None)
+    }
+  }
+
+  protected def runScan(
+    inputDir: File,
+    customCommands: Seq[String],
+    customRuleFile: Option[File]
+  ): Try[SemGrepFindings] = recordTime(() => {
+    val customRulePath = customRuleFile match {
+      case Some(f) => s"--config ${f.pathAsString}"
+      case None    => ""
+    }
     val command =
-      (Seq("semgrep", "scan", "--no-git-ignore", "--json", "-q") ++ customCommands :+ inputDir.pathAsString)
+      (Seq(
+        "semgrep",
+        "scan",
+        "--no-git-ignore",
+        "--json",
+        "--config auto",
+        "-q"
+      ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString)
         .mkString(" ")
     ExternalCommand.run(command, inputDir.pathAsString) match {
       case Failure(exception) =>
@@ -34,11 +66,28 @@ trait SemGrepBenchmarkRunner { this: BenchmarkRunner =>
       case Success(lines) =>
         Try(read[SemGrepFindings](lines.mkString("\n")))
     }
+  })
+
+  protected def getRules(ruleName: String): Option[File] = {
+    Option(getClass.getResourceAsStream(s"/semgrep/$ruleName.yaml")) match {
+      case Some(res) =>
+        Using.resource(res) { is =>
+          Option {
+            File
+              .newTemporaryFile("joern-benchmarks-semrep-", ".yaml")
+              .deleteOnExit(swallowIOExceptions = true)
+              .writeByteArray(is.readAllBytes())
+          }
+        }
+      case None =>
+        logger.error(s"Unable to fetch Semgrep rules for $benchmarkName")
+        None
+    }
   }
 
 }
 
-object SemGrepBenchmarkRunner {
+object SemgrepBenchmarkRunner {
 
   val CreatorLabel: String = "SEMGREP"
 

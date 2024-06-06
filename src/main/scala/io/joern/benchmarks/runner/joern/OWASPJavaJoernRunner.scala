@@ -33,7 +33,7 @@ class OWASPJavaJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     }
   }
 
-  private def runOWASP(): Result = {
+  private def runOWASP(): Result = recordTime(() => {
     val expectedTestOutcomes = getExpectedTestOutcomes
     cpgCreator.createCpg(benchmarkBaseDir) match {
       case Failure(exception) =>
@@ -51,6 +51,6 @@ class OWASPJavaJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
           Result(testResults)
         }
     }
-  }
+  })
 
 }
