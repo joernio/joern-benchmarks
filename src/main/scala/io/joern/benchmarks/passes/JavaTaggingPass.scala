@@ -47,8 +47,7 @@ class JavaTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(impli
         .nameExact(Defines.ConstructorMethodName) ++
       cpg.method
         .filter(_.fullName.startsWith("java.io.FileWriter"))
-        .nameExact(Defines.ConstructorMethodName) 
-      ).parameter.argument
+        .nameExact(Defines.ConstructorMethodName)).parameter.argument
       .where(_.argumentIndex(1))
   }
 
