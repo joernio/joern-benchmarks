@@ -24,9 +24,12 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
-  override protected val benchmarkUrl: URL = URI(
-    "https://github.com/too4words/securibench-micro/archive/6a5a724.zip"
-  ).toURL
+  private val version     = "0.4.0"
+  private val packageName = s"securibench-micro-$creatorLabel"
+
+  override protected val benchmarkUrl: URL =
+    URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
+
   override protected val benchmarkFileName: String = "securibench-micro-6a5a72488ea830d99f9464fc1f0562c4f864214b"
   override protected val benchmarkBaseDir: File    = datasetDir / benchmarkFileName
 
@@ -34,33 +37,33 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
   override def initialize(): Try[File] = Try {
     downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
-    downloadFile(apacheJdo, benchmarkBaseDir / "lib" / "jdo-api-3.1.jar")
-    if (
-      creatorLabel == "JAVA" && (benchmarkBaseDir / "classes")
-        .walk()
-        .count(_.`extension`.contains(".class")) < 1
-    ) {
-      val sourceFiles = (benchmarkBaseDir / "src")
-        .walk()
-        .filter(f => f.isRegularFile && f.`extension`.contains(".java"))
-        .map(f => f.pathAsString.stripPrefix(s"${benchmarkBaseDir.pathAsString}${java.io.File.separator}"))
-        .mkString(" ")
-      val command =
-        Seq(
-          "javac",
-          "-cp",
-          "'.:lib/cos.jar:lib/j2ee.jar:lib/java2html.jar:lib/jdo-api-3.1.jar;'",
-          "-d",
-          "classes",
-          sourceFiles
-        ).mkString(" ")
-      ExternalCommand.run(command, benchmarkBaseDir.pathAsString) match {
-        case Failure(exception) =>
-          logger.error(s"Exception encountered while compiling source code with: '$command'")
-          throw exception
-        case Success(_) => logger.info(s"Successfully compiled $benchmarkName")
-      }
-    }
+//    downloadFile(apacheJdo, benchmarkBaseDir / "lib" / "jdo-api-3.1.jar")
+//    if (
+//      creatorLabel == "JAVA" && (benchmarkBaseDir / "classes")
+//        .walk()
+//        .count(_.`extension`.contains(".class")) < 1
+//    ) {
+//      val sourceFiles = (benchmarkBaseDir / "src")
+//        .walk()
+//        .filter(f => f.isRegularFile && f.`extension`.contains(".java"))
+//        .map(f => f.pathAsString.stripPrefix(s"${benchmarkBaseDir.pathAsString}${java.io.File.separator}"))
+//        .mkString(" ")
+//      val command =
+//        Seq(
+//          "javac",
+//          "-cp",
+//          "'.:lib/cos.jar:lib/j2ee.jar:lib/java2html.jar:lib/jdo-api-3.1.jar;'",
+//          "-d",
+//          "classes",
+//          sourceFiles
+//        ).mkString(" ")
+//      ExternalCommand.run(command, benchmarkBaseDir.pathAsString) match {
+//        case Failure(exception) =>
+//          logger.error(s"Exception encountered while compiling source code with: '$command'")
+//          throw exception
+//        case Success(_) => logger.info(s"Successfully compiled $benchmarkName")
+//      }
+//    }
     benchmarkBaseDir
   }
 
