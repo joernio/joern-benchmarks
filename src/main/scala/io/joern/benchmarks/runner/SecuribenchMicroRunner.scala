@@ -3,66 +3,34 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaCpgCreator, JavaSrcCpgCreator}
-import io.joern.benchmarks.passes.FindingsPass
-import io.joern.benchmarks.runner.*
 import io.joern.x2cpg.utils.ExternalCommand
-import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
-import io.shiftleft.semanticcpg.language.*
 import org.slf4j.LoggerFactory
 
 import java.net.{URI, URL}
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{Failure, Success, Try}
 
 abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
-    with SingleFileDownloader {
+    with MultiFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
-  override protected val benchmarkUrl: URL = URI(
-    "https://github.com/too4words/securibench-micro/archive/6a5a724.zip"
-  ).toURL
-  override protected val benchmarkFileName: String = "securibench-micro-6a5a72488ea830d99f9464fc1f0562c4f864214b"
-  override protected val benchmarkBaseDir: File    = datasetDir / benchmarkFileName
+  private val version     = "0.4.0"
+  private val packageName = s"securibench-micro-$creatorLabel"
+
+  override protected val benchmarkUrls: Map[String, URL] = Map(
+    "securibench-micro" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
+  )
+
+  override protected val benchmarkDirName: String = packageName
+  override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName
 
   private val apacheJdo = URI("https://repo1.maven.org/maven2/javax/jdo/jdo-api/3.1/jdo-api-3.1.jar").toURL
 
-  override def initialize(): Try[File] = Try {
-    downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
-    downloadFile(apacheJdo, benchmarkBaseDir / "lib" / "jdo-api-3.1.jar")
-    if (
-      creatorLabel == "JAVA" && (benchmarkBaseDir / "classes")
-        .walk()
-        .count(_.`extension`.contains(".class")) < 1
-    ) {
-      val sourceFiles = (benchmarkBaseDir / "src")
-        .walk()
-        .filter(f => f.isRegularFile && f.`extension`.contains(".java"))
-        .map(f => f.pathAsString.stripPrefix(s"${benchmarkBaseDir.pathAsString}${java.io.File.separator}"))
-        .mkString(" ")
-      val command =
-        Seq(
-          "javac",
-          "-cp",
-          "'.:lib/cos.jar:lib/j2ee.jar:lib/java2html.jar:lib/jdo-api-3.1.jar;'",
-          "-d",
-          "classes",
-          sourceFiles
-        ).mkString(" ")
-      ExternalCommand.run(command, benchmarkBaseDir.pathAsString) match {
-        case Failure(exception) =>
-          logger.error(s"Exception encountered while compiling source code with: '$command'")
-          throw exception
-        case Success(_) => logger.info(s"Successfully compiled $benchmarkName")
-      }
-    }
-    benchmarkBaseDir
-  }
+  override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
   /** @return
     *   a map with a key of a file name and line number pair, to a boolean indicating true if a the sink is tainted.

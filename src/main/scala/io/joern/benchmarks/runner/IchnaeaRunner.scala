@@ -6,13 +6,13 @@ import io.joern.benchmarks.Domain.*
 import upickle.default.*
 
 import java.net.{URI, URL}
-import scala.util.{Try, Using}
+import scala.util.{Try}
 
 abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
     with MultiFileDownloader {
 
-  private val version     = "0.2.0"
+  private val version     = "0.4.0"
   private val packageName = "ichnaea"
 
   override val benchmarkName = s"Ichnaea $creatorLabel"
