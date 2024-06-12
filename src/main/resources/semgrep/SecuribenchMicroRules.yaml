@@ -6,10 +6,10 @@ rules:
     mode: taint
     pattern-sources:
       - patterns:
-          - pattern: protected void $FUNCTION(Object $X, ...)
+          - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
           - focus-metavariable: $X
     pattern-sinks:
-      - patterns:
+      - pattern-either:
           - pattern-inside: |
               void $FUNCTION(..., $Y) {
                 ...
@@ -17,8 +17,8 @@ rules:
                 ...
               }
           - pattern: writer.println(...);
-            
-            
+          - pattern: writer.print(...);
+
   - id: sb-taint-rules-2
     languages: [java]
     severity: ERROR
@@ -29,7 +29,72 @@ rules:
           - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
           - focus-metavariable: $X
     pattern-sinks:
+      - pattern-either:
+          - pattern-inside: |
+              void $FUNCTION(..., $Y) {
+                ...
+                String $N = $Y.getParameter(...);
+                ...
+                File $F = new File($N);
+                ...
+              }
+          - pattern: $F.createNewFile();
+          - pattern: $F.write(...);
+
+  - id: sb-taint-rules-3
+    languages: [java]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    mode: taint
+    pattern-sources:
       - patterns:
+          - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
+          - focus-metavariable: $X
+    pattern-sinks:
+      - pattern-either:
+          - pattern: prepareStatement($X, ...);
+          - pattern: execute($X);
+          - pattern: executeUpdate($X);
+          - pattern: executeQuery($X);
+
+  - id: sb-taint-rules-4
+    languages: [java]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
+          - focus-metavariable: $X
+    pattern-sinks:
+      - patterns:
+          - pattern: $Y.sendRedirect(...);
+
+  - id: sb-taint-rules-5
+    languages: [java]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
+          - focus-metavariable: $X
+    pattern-sinks:
+      - pattern-either:
+          - pattern: new FileWriter(...);
+          - pattern: new FileInputStream(...);
+          - pattern: new File(...);
+
+  - id: sb-taint-rules-6
+    languages: [java]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: getServletConfig(...)
+    pattern-sinks:
+      - pattern-either:
           - pattern-inside: |
               void $FUNCTION(..., $Y) {
                 ...
@@ -37,3 +102,18 @@ rules:
                 ...
               }
           - pattern: writer.println(...);
+          - pattern: writer.print(...);
+
+  - id: sb-taint-rules-7
+    languages: [java]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: $X = getCookies();
+          - focus-metavariable: $X
+    pattern-sinks:
+      - pattern-either:
+          - pattern: writer.println(...);
+          - pattern: writer.print(...);

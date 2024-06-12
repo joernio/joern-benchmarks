@@ -29,7 +29,7 @@ class JavaTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(impli
   override def defaultSinks: Iterator[CfgNode] = {
     (cpg.method
       .filter(_.fullName.startsWith("java.io.File"))
-      .nameExact(Defines.ConstructorMethodName, "write", "createNewFile") ++
+      .nameExact(Defines.ConstructorMethodName, "write") ++
       cpg.method
         .filter(_.fullName.startsWith("java.io.PrintWriter"))
         .nameExact("print", "println") ++
@@ -48,7 +48,10 @@ class JavaTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(impli
       cpg.method
         .filter(_.fullName.startsWith("java.io.FileWriter"))
         .nameExact(Defines.ConstructorMethodName)).parameter.argument
-      .where(_.argumentIndex(1))
+      .where(_.argumentIndex(1)) ++ cpg.method
+      .filter(_.fullName.startsWith("java.io.File"))
+      .nameExact("createNewFile")
+      .callIn
   }
 
 }
