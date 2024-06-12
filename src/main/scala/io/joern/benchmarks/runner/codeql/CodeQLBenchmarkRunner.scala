@@ -40,7 +40,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
       "--overwrite",
       "--build-mode=none"
     ).mkString(" ")
-    ExternalCommand.run(cmd, sourceRoot.parent.pathAsString) match {
+    recordTime(() => { ExternalCommand.run(cmd, sourceRoot.parent.pathAsString) }) match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql database create`! Make sure `codeql` is installed and there is an internet connection."
