@@ -6,26 +6,6 @@ rules:
     mode: taint
     pattern-sources:
       - patterns:
-          - pattern: protected void $FUNCTION(Object $X, ...)
-          - focus-metavariable: $X
-    pattern-sinks:
-      - patterns:
-          - pattern-inside: |
-              void $FUNCTION(..., $Y) {
-                ...
-                PrintWriter writer = $Y.getWriter();
-                ...
-              }
-          - pattern: writer.println(...);
-            
-            
-  - id: sb-taint-rules-2
-    languages: [java]
-    severity: ERROR
-    message: "Attacker-controlled getter to some sink"
-    mode: taint
-    pattern-sources:
-      - patterns:
           - pattern: protected void $FUNCTION(HttpServletRequest $X, ...)
           - focus-metavariable: $X
     pattern-sinks:

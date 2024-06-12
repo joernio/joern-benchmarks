@@ -25,23 +25,6 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
 
   protected def runScan(
     inputDir: File,
-    customCommands: Seq[String] = Seq.empty,
-    customRules: Seq[String] = Seq.empty
-  ): Try[SemGrepFindings] = {
-    if (customRules.nonEmpty) {
-      val tmp = File
-        .newTemporaryFile(prefix = "joern-benchmarks-semgrep", suffix = ".yaml")
-        .writeText("rules:\n")
-        .deleteOnExit(swallowIOExceptions = true)
-      customRules.map(rule => tmp.appendText(s"$rule\n"))
-      runScan(inputDir, customCommands, Option(tmp))
-    } else {
-      runScan(inputDir, customCommands, None)
-    }
-  }
-
-  protected def runScan(
-    inputDir: File,
     customCommands: Seq[String],
     customRuleFile: Option[File]
   ): Try[SemGrepFindings] = recordTime(() => {

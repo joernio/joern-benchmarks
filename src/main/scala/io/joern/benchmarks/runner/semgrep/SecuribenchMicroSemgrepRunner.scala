@@ -29,7 +29,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
         Using.resource(res) { is =>
           Option {
             File
-              .newTemporaryFile("joern-benchmarks-semrep-", ".yaml")
+              .newTemporaryFile("joern-benchmarks-semgrep-", ".yaml")
               .deleteOnExit(swallowIOExceptions = true)
               .writeByteArray(is.readAllBytes())
           }

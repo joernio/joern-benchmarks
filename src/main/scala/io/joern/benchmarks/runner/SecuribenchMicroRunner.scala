@@ -39,7 +39,7 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
     def splitLine(line: String): Option[String] = {
       line.split(':').toList match {
-        case fileName :: lineNo :: _ if lineNo.toIntOption.isDefined =>
+        case fileName :: lineNo :: _ if lineNo.toIntOption.isDefined && fileName.endsWith(".java") =>
           Option(s"${fileName.split(java.io.File.separator).last.stripSuffix(".java")}:${lineNo.toInt}")
         case _ =>
           logger.error(s"Unable to determine filename and line number from $line")
