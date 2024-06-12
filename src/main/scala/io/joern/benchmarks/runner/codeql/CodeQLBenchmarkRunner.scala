@@ -2,8 +2,12 @@ package io.joern.benchmarks.runner.codeql
 
 import better.files.File
 import io.joern.benchmarks.runner.BenchmarkRunner
-import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLFindings
-import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepFindings
+import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.{
+  CodeQLFindings,
+  CodeQLPhysicalLocation,
+  CodeQLSimpleFindings,
+  CodeQLSimpleResult
+}
 import io.joern.x2cpg.utils.ExternalCommand
 import upickle.default.*
 
@@ -13,13 +17,13 @@ import scala.util.{Failure, Success, Try, Using}
   */
 trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
 
-  private var resultsOpt: Option[CodeQLFindings] = None
+  private var resultsOpt: Option[CodeQLSimpleFindings] = None
 
-  protected def setResults(results: CodeQLFindings): Unit = {
+  protected def setResults(results: CodeQLSimpleFindings): Unit = {
     resultsOpt = Option(results)
   }
 
-  protected def sgResults: CodeQLFindings = resultsOpt match {
+  protected def cqlResults: CodeQLSimpleFindings = resultsOpt match {
     case Some(results) => results
     case None          => throw new RuntimeException("No results have been set!")
   }
@@ -54,7 +58,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
   private def installQuery(queryFiles: List[File], language: String): Try[File] = {
     val tmpDir =
       File.newTemporaryDirectory("joern-benchmarks-codeql-query-pack") deleteOnExit (swallowIOExceptions = true)
-    queryFiles.foreach(f => tmpDir.copyTo(tmpDir / f.name))
+    queryFiles.foreach(f => f.copyTo(tmpDir / f.name))
     val qlPack = (tmpDir / "qlpack.yml")
       .createFile()
       .writeText(s"""
@@ -64,7 +68,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
         |  codeql/$language-all: "*"
         |""".stripMargin)
     val cmd = Seq("codeql", "pack", "install", tmpDir.name).mkString(" ")
-    ExternalCommand.run(cmd, ".") match {
+    ExternalCommand.run(cmd, tmpDir.parent.pathAsString) match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql pack install`! Make sure `codeql` is installed and there is an internet connection."
@@ -75,14 +79,15 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     }
   }
 
-  protected def runScan(inputDir: File, language: String, queryFiles: List[File]): Try[CodeQLFindings] = {
+  protected def runScan(inputDir: File, language: String, queryFiles: List[File]): Try[CodeQLSimpleFindings] = {
     initializeDatabase(inputDir, language) match {
       case Failure(exception) => Failure(exception)
       case Success(databaseFile) =>
         installQuery(queryFiles, language) match {
           case Failure(exception) => Failure(exception)
           case Success(queryPackDir) =>
-            val tmpFile = File.newTemporaryFile("joern-benchmarks-output", ".sarif") deleteOnExit (swallowIOExceptions = true)
+            val tmpFile =
+              File.newTemporaryFile("joern-benchmarks-output", ".sarif") deleteOnExit (swallowIOExceptions = true)
             recordTime(() => {
               val command =
                 Seq(
@@ -101,7 +106,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   )
                   Failure(exception)
                 case Success(_) =>
-                  Try(read[CodeQLFindings](tmpFile.path))
+                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults)
               }
             })
         }
@@ -125,13 +130,34 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     }
   }
 
+  private def simplifyResults(results: CodeQLFindings): CodeQLSimpleFindings = {
+    val simpleResults = results.runs
+      .flatMap(_.results)
+      .flatMap(_.codeFlows)
+      .flatMap(_.threadFlows)
+      .flatMap(_.locations.lastOption)
+      .map(_.location)
+      .map(_.physicalLocation)
+      .map { case CodeQLPhysicalLocation(artifactLocation, region) =>
+        CodeQLSimpleResult(artifactLocation.uri, region.startLine)
+      }
+      .toList
+    CodeQLSimpleFindings(simpleResults)
+  }
+
 }
 
 object CodeQLBenchmarkRunner {
 
   val CreatorLabel: String = "CODEQL"
 
-  case class CodeQLFindings(runs: Option[CodeQLResults]) derives ReadWriter
+  // A simple abstraction of the results
+  case class CodeQLSimpleFindings(findings: List[CodeQLSimpleResult])
+
+  case class CodeQLSimpleResult(filename: String, lineNumber: Int)
+
+  // the JSON deserialization model
+  case class CodeQLFindings(runs: Seq[CodeQLResults]) derives ReadWriter
 
   case class CodeQLResults(results: Seq[CodeQLResult]) derives ReadWriter
 
@@ -139,7 +165,9 @@ object CodeQLBenchmarkRunner {
 
   case class CodeQLCodeFlow(threadFlows: Seq[CodeQLThreadFlow]) derives ReadWriter
 
-  case class CodeQLThreadFlow(location: CodeQLLocation) derives ReadWriter
+  case class CodeQLThreadFlow(locations: Seq[CodeQLLocationWrapper]) derives ReadWriter
+
+  case class CodeQLLocationWrapper(location: CodeQLLocation) derives ReadWriter
 
   case class CodeQLLocation(physicalLocation: CodeQLPhysicalLocation) derives ReadWriter
 

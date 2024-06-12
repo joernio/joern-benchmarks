@@ -24,20 +24,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
   }
 
   override def run(): Domain.Result = {
-    val rules = Option(getClass.getResourceAsStream("/semgrep/SecuribenchMicroRules.yaml")) match {
-      case Some(res) =>
-        Using.resource(res) { is =>
-          Option {
-            File
-              .newTemporaryFile("joern-benchmarks-semgrep-", ".yaml")
-              .deleteOnExit(swallowIOExceptions = true)
-              .writeByteArray(is.readAllBytes())
-          }
-        }
-      case None =>
-        logger.error(s"Unable to fetch Semgrep rules for $benchmarkName")
-        None
-    }
+    val rules = getRules("SecuribenchMicroRules")
     runScan(benchmarkBaseDir, Seq.empty, rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)

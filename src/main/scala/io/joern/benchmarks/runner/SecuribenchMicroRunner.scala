@@ -3,6 +3,8 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
+import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner
+import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner
 import io.joern.x2cpg.utils.ExternalCommand
 import org.slf4j.LoggerFactory
 
@@ -18,8 +20,14 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
-  private val version     = "0.4.0"
-  private val packageName = s"securibench-micro-$creatorLabel"
+  private val version = "0.4.0"
+  private val packageName = {
+    if (Set(CodeQLBenchmarkRunner.CreatorLabel, SemgrepBenchmarkRunner.CreatorLabel).contains(creatorLabel)) {
+      s"securibench-micro-JAVASRC"
+    } else {
+      s"securibench-micro-$creatorLabel"
+    }
+  }
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
     "securibench-micro" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL

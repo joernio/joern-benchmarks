@@ -24,6 +24,9 @@ object AvailableBenchmarks extends Enumeration {
   val SECURIBENCH_MICRO_SEMGREP = Value
   val THORAT_SEMGREP            = Value
   val ICHNAEA_SEMGREP           = Value
+
+  // CodeQL
+  val SECURIBENCH_MICRO_CODEQL = Value
 }
 
 object OutputFormat extends Enumeration {
