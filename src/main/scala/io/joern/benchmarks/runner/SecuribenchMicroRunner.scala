@@ -3,6 +3,8 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
+import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner
+import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner
 import io.joern.x2cpg.utils.ExternalCommand
 import org.slf4j.LoggerFactory
 
@@ -18,8 +20,13 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
-  private val version     = "0.4.0"
-  private val packageName = s"securibench-micro-$creatorLabel"
+  private val version = "0.4.0"
+  private val packageName =
+    if (creatorLabel == "JAVA") {
+      s"securibench-micro-JAVA"
+    } else {
+      s"securibench-micro-JAVASRC"
+    }
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
     "securibench-micro" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
@@ -39,7 +46,7 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
     def splitLine(line: String): Option[String] = {
       line.split(':').toList match {
-        case fileName :: lineNo :: _ if lineNo.toIntOption.isDefined =>
+        case fileName :: lineNo :: _ if lineNo.toIntOption.isDefined && fileName.endsWith(".java") =>
           Option(s"${fileName.split(java.io.File.separator).last.stripSuffix(".java")}:${lineNo.toInt}")
         case _ =>
           logger.error(s"Unable to determine filename and line number from $line")
