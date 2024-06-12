@@ -21,13 +21,12 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
   private val version = "0.4.0"
-  private val packageName = {
-    if (Set(CodeQLBenchmarkRunner.CreatorLabel, SemgrepBenchmarkRunner.CreatorLabel).contains(creatorLabel)) {
-      s"securibench-micro-JAVASRC"
+  private val packageName =
+    if (creatorLabel == "JAVA") {
+      s"securibench-micro-JAVA"
     } else {
-      s"securibench-micro-$creatorLabel"
+      s"securibench-micro-JAVASRC"
     }
-  }
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
     "securibench-micro" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
