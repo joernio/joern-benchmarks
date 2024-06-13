@@ -11,18 +11,19 @@ import scala.util.Try
 
 abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
-    with SingleFileDownloader {
+    with MultiFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  private val version        = "0.0.7"
-  override val benchmarkName = s"Thorat Python v$version $creatorLabel"
+  private val packageName    = "THORAT"
+  private val thoratVersion  = "0.0.7"
+  override val benchmarkName = s"Thorat Python v$thoratVersion $creatorLabel"
 
-  override protected val benchmarkUrl: URL = URI(
-    s"https://github.com/DavidBakerEffendi/benchmark-for-taint-analysis-tools-for-python/archive/refs/tags/v$version.zip"
-  ).toURL
-  override protected val benchmarkFileName: String = s"benchmark-for-taint-analysis-tools-for-python-$version"
-  override protected val benchmarkBaseDir: File    = datasetDir / benchmarkFileName
+  override protected val benchmarkUrls: Map[String, URL] =
+    Map("THORAT" -> URI(s"$baseDatasetsUrl/v$benchmarksVersion/$packageName.zip").toURL)
+
+  override protected val benchmarkDirName: String = s"$packageName"
+  override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName
 
   override def initialize(): Try[File] = {
     if (!benchmarkBaseDir.exists) downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)

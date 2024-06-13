@@ -20,7 +20,6 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
 
   override val benchmarkName = s"Securibench Micro v1.08 $creatorLabel"
 
-  private val version = "0.4.0"
   private val packageName =
     if (creatorLabel == "JAVA") {
       s"securibench-micro-JAVA"
@@ -29,7 +28,7 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     }
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
-    "securibench-micro" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
+    "securibench-micro" -> URI(s"$baseDatasetsUrl/v$benchmarksVersion/$packageName.zip").toURL
   )
 
   override protected val benchmarkDirName: String = packageName
