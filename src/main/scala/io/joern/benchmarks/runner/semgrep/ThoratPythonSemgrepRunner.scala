@@ -5,11 +5,8 @@ import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.runner.*
 import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
-import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
-import io.shiftleft.semanticcpg.language.*
 
-import scala.util.{Failure, Success, Using}
+import scala.util.{Failure, Success}
 
 class ThoratPythonSemgrepRunner(datasetDir: File)
     extends ThoratPythonRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
