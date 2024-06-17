@@ -106,7 +106,12 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   )
                   Failure(exception)
                 case Success(_) =>
-                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults)
+                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults) match {
+                    case Failure(exception) =>
+                      println(tmpFile.lines.mkString("\n"))
+                      Failure(exception)
+                    case Success(value) => Success(value)
+                  }
               }
             })
         }
@@ -161,7 +166,13 @@ object CodeQLBenchmarkRunner {
 
   case class CodeQLResults(results: Seq[CodeQLResult]) derives ReadWriter
 
-  case class CodeQLResult(codeFlows: Seq[CodeQLCodeFlow]) derives ReadWriter
+  implicit val codeQLResultRw: ReadWriter[CodeQLResult] = readwriter[ujson.Value]
+    .bimap[CodeQLResult](
+      x => ujson.Null, // we do not deserialize
+      json => CodeQLResult(json.obj.get("codeFlows").map(x => read[Seq[CodeQLCodeFlow]](x)).getOrElse(Seq.empty))
+    )
+
+  case class CodeQLResult(codeFlows: Seq[CodeQLCodeFlow])
 
   case class CodeQLCodeFlow(threadFlows: Seq[CodeQLThreadFlow]) derives ReadWriter
 

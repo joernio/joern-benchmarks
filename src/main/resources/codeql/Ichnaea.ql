@@ -5,12 +5,12 @@ import semmle.javascript.dataflow.TaintTracking
 /**
  * @name Exported method parameters written to `eval`-like functions
  * @description Tainted data coming in from exported method parameters written to `eval`-like functions
- * @kind problem
+ * @kind path-problem
  * @id javascript/module-export-rce
  * @problem.severity error
  * @tags security
  */
-class IchnaeaConfig extends DataFlow::Configuration {
+class IchnaeaConfig extends TaintTracking::Configuration {
 
   IchnaeaConfig() { this = "IchnaeaConfig" }
 
@@ -52,6 +52,8 @@ class IchnaeaConfig extends DataFlow::Configuration {
   }
 }
 
-from IchnaeaConfig dataflow, DataFlow::Node source, DataFlow::Node sink
-where dataflow.hasFlow(source, sink)
-select source, "Data flow from $@ to $@.", source, source.toString(), sink, sink.toString()
+import DataFlow::PathGraph
+
+from IchnaeaConfig dataflow, DataFlow::PathNode source, DataFlow::PathNode sink
+where dataflow.hasFlow(source.getNode(), sink.getNode())
+select source.getNode(), source, sink, "Properties from possibly exposed parameter are written a sensitive sink."

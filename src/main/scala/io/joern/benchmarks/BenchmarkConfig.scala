@@ -28,6 +28,7 @@ object AvailableBenchmarks extends Enumeration {
   // CodeQL
   val SECURIBENCH_MICRO_CODEQL = Value
   val THORAT_CODEQL            = Value
+  val ICHNAEA_CODEQL           = Value
 }
 
 object OutputFormat extends Enumeration {

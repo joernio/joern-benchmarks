@@ -6,7 +6,7 @@ import io.joern.benchmarks.runner.BenchmarkRunner
 import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
-import io.joern.benchmarks.runner.codeql.{SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
+import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
 import io.joern.benchmarks.runner.joern.{
   IchnaeaJoernRunner,
   OWASPJavaJoernRunner,
@@ -78,7 +78,8 @@ object Benchmark {
     (AvailableBenchmarks.THORAT_SEMGREP, x => new ThoratPythonSemgrepRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA_SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
     (AvailableBenchmarks.SECURIBENCH_MICRO_CODEQL, x => new SecuribenchMicroCodeQLRunner(x.datasetDir)),
-    (AvailableBenchmarks.THORAT_CODEQL, x => new ThoratCodeQLRunner(x.datasetDir))
+    (AvailableBenchmarks.THORAT_CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
+    (AvailableBenchmarks.ICHNAEA_CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))
   )
 
 }
