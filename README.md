@@ -29,9 +29,9 @@ frontend (JVM bytecode).
 | Benchmark                                                                                      | Status   | Enabled Frontends          |
 |------------------------------------------------------------------------------------------------|----------|----------------------------|
 | [`OWASP`](https://owasp.org/www-project-benchmark/)                                            | WIP      | `JAVASRC`                  |
-| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro)                          | Complete | `JAVASRC` `JAVA` `SEMGREP` |
+| [`SECURIBENCH_MICRO`](https://github.com/too4words/securibench-micro)                          | Complete | `JAVASRC` `JAVA` `SEMGREP` `CODEQL` |
 | [`ICHNAEA`](https://www.franktip.org/pubs/tse2020.pdf)                                         | Complete      | `JSSRC` `SEMGREP`          |
-| [`THORAT`](https://github.com/DavidBakerEffendi/benchmark-for-taint-analysis-tools-for-python) | Complete      | `PYSRC` `SEMGREP`           |
+| [`THORAT`](https://github.com/DavidBakerEffendi/benchmark-for-taint-analysis-tools-for-python) | Complete      | `PYSRC` `SEMGREP` `CODEQL`          |
 
 ### Joern
 
