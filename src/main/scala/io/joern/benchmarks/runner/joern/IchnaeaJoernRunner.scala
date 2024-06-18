@@ -62,6 +62,9 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         .source
         .l
 
+      // Overapproximate similar to what is done in the CodeQL query
+      val mayBeExposed = exposeFunctionSink.file.method.l
+
       // e.g. val func = function (x) {}; module.exports = func
       val exposedObjectsSource = exposeFunctionSink
         .reachableBy(cpg.identifier.where(_.inAssignment.source.isMethodRef))
@@ -111,7 +114,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
           .l
 
       val allExposedMethods =
-        (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject ++ fieldsOfExposedObjects).l
+        (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject ++ fieldsOfExposedObjects ++ mayBeExposed).l
       val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to dot his yet
         .collectAll[MethodRef]
         .outE("CAPTURE")

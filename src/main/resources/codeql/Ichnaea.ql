@@ -46,7 +46,6 @@ class IchnaeaConfig extends TaintTracking::Configuration {
     f.getRelativePath().regexpMatch("^node_modules/.*") or
     f.getAbsolutePath().regexpMatch(".*/codeql/.*") or
     f.getRelativePath().regexpMatch("^nodejs/.*") or
-    f.getRelativePath().regexpMatch("^lib/.*") or
     f.getRelativePath().regexpMatch("^internal/.*") or
     f.getRelativePath().regexpMatch("^tests/.*")
   }
