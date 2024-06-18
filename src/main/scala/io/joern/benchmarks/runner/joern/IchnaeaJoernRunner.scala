@@ -115,7 +115,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
 
       val allExposedMethods =
         (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject ++ fieldsOfExposedObjects ++ mayBeExposed).l
-      val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to dot his yet
+      val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to do this yet
         .collectAll[MethodRef]
         .outE("CAPTURE")
         .inV
