@@ -161,7 +161,13 @@ object CodeQLBenchmarkRunner {
 
   case class CodeQLResults(results: Seq[CodeQLResult]) derives ReadWriter
 
-  case class CodeQLResult(codeFlows: Seq[CodeQLCodeFlow]) derives ReadWriter
+  implicit val codeQLResultRw: ReadWriter[CodeQLResult] = readwriter[ujson.Value]
+    .bimap[CodeQLResult](
+      x => ujson.Null, // we do not deserialize
+      json => CodeQLResult(json.obj.get("codeFlows").map(x => read[Seq[CodeQLCodeFlow]](x)).getOrElse(Seq.empty))
+    )
+
+  case class CodeQLResult(codeFlows: Seq[CodeQLCodeFlow])
 
   case class CodeQLCodeFlow(threadFlows: Seq[CodeQLThreadFlow]) derives ReadWriter
 

@@ -13,7 +13,7 @@ import semmle.code.java.dataflow.TaintTracking
 module HttpServletRequestToPrintWriterConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     exists(MethodCall call, Parameter param |
-      call.getAChildExpr().toString() = param.getName().toString() and
+      call.getAnEnclosingStmt() = param.getAnAccess().getAnEnclosingStmt() and
       source.asExpr() = call and
       call.getReceiverType().hasName("HttpServletRequest") and
       call.getMethod().hasName("getParameter")

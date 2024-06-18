@@ -1,26 +1,24 @@
-package io.joern.benchmarks.runner.semgrep
+package io.joern.benchmarks.runner.codeql
 
 import better.files.File
-import io.joern.benchmarks.*
-import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.runner.*
-import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
+import io.joern.benchmarks.Domain
+import io.joern.benchmarks.Domain.{Result, TestEntry}
+import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLSimpleResult
+import io.joern.benchmarks.runner.{FindingInfo, ThoratPythonRunner}
 
 import scala.util.{Failure, Success}
 
-class ThoratPythonSemgrepRunner(datasetDir: File)
-    extends ThoratPythonRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
-    with SemgrepBenchmarkRunner {
+class ThoratCodeQLRunner(datasetDir: File)
+    extends ThoratPythonRunner(datasetDir, CodeQLBenchmarkRunner.CreatorLabel)
+    with CodeQLBenchmarkRunner {
 
   override def findings(testName: String): List[FindingInfo] = {
     val List(name, lineNo) = testName.split(':').toList: @unchecked
-    sgResults.results
-      .flatMap(_.extra.dataflowTrace)
-      .filter { case SemGrepTrace((_, (sinkLoc, _)), _) =>
-        sinkLoc.path.endsWith(name) && sinkLoc.start.line == lineNo.toInt
+    cqlResults.findings
+      .filter { case CodeQLSimpleResult(filename, lineNumber) =>
+        filename.endsWith(name) && lineNo.toInt == lineNumber
       }
       .map(_ => FindingInfo())
-      .toList
   }
 
   override def run(): Result = {
@@ -35,13 +33,13 @@ class ThoratPythonSemgrepRunner(datasetDir: File)
 
   private def runThorat(): Result = {
     val expectedTestOutcomes = getExpectedTestOutcomes
-    val rules                = getRules("ThoratRules")
-    runScan(benchmarkBaseDir / "tests", Seq("--include=*.py"), rules) match {
+    val rules                = getRules("Thorat").toList
+    runScan(benchmarkBaseDir / "tests", "python", rules) match {
       case Failure(exception) =>
-        logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
+        logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
         Domain.Result()
-      case Success(semgrepResults) =>
-        setResults(semgrepResults)
+      case Success(codeQlResults) =>
+        setResults(codeQlResults)
         val testResults = expectedTestOutcomes
           .map { case (testName, outcome) =>
             TestEntry(testName, compare(testName, outcome))
@@ -51,5 +49,4 @@ class ThoratPythonSemgrepRunner(datasetDir: File)
         Domain.Result(testResults)
     }
   }
-
 }
