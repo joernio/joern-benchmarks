@@ -3,9 +3,8 @@ package io.joern.benchmarks.cpggen
 import better.files.File
 import io.joern.benchmarks.passes.{FindingsPass, PythonTaggingPass}
 import io.joern.benchmarks.runner.{BenchmarkSourcesAndSinks, DefaultBenchmarkSourcesAndSinks}
-import io.joern.dataflowengineoss.DefaultSemantics
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
-import io.joern.dataflowengineoss.semanticsloader.FlowSemantic
+import io.joern.dataflowengineoss.semanticsloader.{FlowMapping, FlowSemantic}
 import io.joern.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   ImportsPass,
@@ -26,6 +25,17 @@ import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scala.util.Try
 
 sealed trait PythonCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
+
+  override def extraSemantics: List[FlowSemantic] = List(
+    FlowSemantic("collections.py.*\\.popleft", FlowMapping(0, -1) :: FlowMapping(0, 0) :: Nil, true),
+    FlowSemantic("__builtin\\.dict.*\\.get", FlowMapping(0, -1) :: FlowMapping(0, 0) :: Nil, true),
+    FlowSemantic("__builtin\\.dict.*\\.keys", FlowMapping(0, -1) :: FlowMapping(0, 0) :: Nil, true),
+    FlowSemantic(
+      "__builtin\\.list.*\\.append",
+      FlowMapping(1, 0) :: FlowMapping(1, 1) :: FlowMapping(0, 0) :: Nil,
+      true
+    )
+  )
 
   protected def runPythonOverlays(
     cpg: Cpg,

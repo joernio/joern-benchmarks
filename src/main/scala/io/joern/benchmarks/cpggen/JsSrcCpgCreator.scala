@@ -1,19 +1,24 @@
 package io.joern.benchmarks.cpggen
 
 import better.files.File
-import io.joern.benchmarks.passes.{FindingsPass, JavaScriptTaggingPass, JavaTaggingPass}
+import io.joern.benchmarks.passes.{FindingsPass, JavaScriptTaggingPass}
 import io.joern.benchmarks.runner.{BenchmarkSourcesAndSinks, DefaultBenchmarkSourcesAndSinks}
-import io.joern.dataflowengineoss.DefaultSemantics
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
-import io.joern.dataflowengineoss.semanticsloader.FlowSemantic
+import io.joern.dataflowengineoss.semanticsloader.{FlowMapping, FlowSemantic}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JsSrcConfig}
 import io.joern.x2cpg.X2CpgFrontend
-import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
+import io.shiftleft.codepropertygraph.generated.{Cpg, Languages, Operators}
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 
 import scala.util.Try
 
 sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
+
+  override def extraSemantics: List[FlowSemantic] = List(
+    FlowSemantic("__ecma.String:trim", FlowMapping(0, 0):: FlowMapping(0, -1) :: Nil),
+    FlowSemantic(Operators.logicalNot, FlowMapping(1, -1):: FlowMapping(2, -1) :: Nil),
+    FlowSemantic(Operators.logicalAnd, FlowMapping(1, -1):: FlowMapping(2, -1) :: Nil)
+  )
 
   protected def runJavaScriptOverlays(
     cpg: Cpg,

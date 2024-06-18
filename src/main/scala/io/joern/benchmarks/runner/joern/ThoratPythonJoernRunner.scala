@@ -7,7 +7,7 @@ import io.joern.benchmarks.cpggen.PythonCpgCreator
 import io.joern.benchmarks.passes.FindingsPass
 import io.joern.benchmarks.runner.*
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
+import io.shiftleft.codepropertygraph.generated.nodes.{Call, CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}

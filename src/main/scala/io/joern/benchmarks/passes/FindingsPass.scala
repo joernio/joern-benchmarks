@@ -18,7 +18,7 @@ class FindingsPass(cpg: Cpg)(implicit val context: EngineContext) extends CpgPas
       val sink = elements.last
       val lineNoPair = NewKeyValuePair()
         .key(LineNo)
-        .value(sink.lineNumber.getOrElse(-1).toString()) :: Nil
+        .value(sink.lineNumber.getOrElse(-1).toString) :: Nil
       val surroundingTypePair = sink.inAst.isMethod.typeDecl.name.map { typeName =>
         NewKeyValuePair()
           .key(SurroundingType)

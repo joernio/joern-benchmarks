@@ -11,6 +11,7 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.semanticcpg.language.*
 
+import scala.collection.immutable.List
 import scala.util.{Failure, Success, Try, Using}
 
 class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
