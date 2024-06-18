@@ -12,7 +12,6 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
     with MultiFileDownloader {
 
-  private val version     = "0.4.0"
   private val packageName = "ichnaea"
 
   override val benchmarkName = s"Ichnaea $creatorLabel"
@@ -45,7 +44,7 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
   protected val sinkNames: Set[String] = Set("exec", "eval", "execSync", "execFileSync")
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
-    "ichnaea" -> URI(s"$baseDatasetsUrl/v$version/$packageName.zip").toURL
+    "ichnaea" -> URI(s"$baseDatasetsUrl/v$benchmarksVersion/$packageName.zip").toURL
   )
 
   override protected val benchmarkDirName: String = "ichnaea"

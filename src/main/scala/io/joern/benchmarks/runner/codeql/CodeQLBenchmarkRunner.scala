@@ -106,12 +106,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   )
                   Failure(exception)
                 case Success(_) =>
-                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults) match {
-                    case Failure(exception) =>
-                      println(tmpFile.lines.mkString("\n"))
-                      Failure(exception)
-                    case Success(value) => Success(value)
-                  }
+                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults)
               }
             })
         }
