@@ -16,11 +16,10 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
   private val logger = LoggerFactory.getLogger(getClass)
 
   private val packageName    = "THORAT"
-  private val thoratVersion  = "0.0.7"
-  override val benchmarkName = s"Thorat Python v$thoratVersion $creatorLabel"
+  override val benchmarkName = s"Thorat $creatorLabel"
 
   override protected val benchmarkUrls: Map[String, URL] =
-    Map("THORAT" -> URI(s"$baseDatasetsUrl/v$benchmarksVersion/$packageName.zip").toURL)
+    Map("THORAT" -> URI(s"$baseDatasetsUrl/$benchmarksVersion/$packageName.zip").toURL)
 
   override protected val benchmarkDirName: String = s"$packageName"
   override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName

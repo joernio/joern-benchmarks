@@ -15,9 +15,9 @@ import scala.util.Try
 sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
   override def extraSemantics: List[FlowSemantic] = List(
-    FlowSemantic("__ecma.String:trim", FlowMapping(0, 0):: FlowMapping(0, -1) :: Nil),
-    FlowSemantic(Operators.logicalNot, FlowMapping(1, -1):: FlowMapping(2, -1) :: Nil),
-    FlowSemantic(Operators.logicalAnd, FlowMapping(1, -1):: FlowMapping(2, -1) :: Nil)
+    FlowSemantic("__ecma.String:trim", FlowMapping(0, 0) :: FlowMapping(0, -1) :: Nil),
+    FlowSemantic(Operators.logicalNot, FlowMapping(1, -1) :: FlowMapping(2, -1) :: Nil),
+    FlowSemantic(Operators.logicalAnd, FlowMapping(1, -1) :: FlowMapping(2, -1) :: Nil)
   )
 
   protected def runJavaScriptOverlays(
@@ -38,7 +38,7 @@ sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreat
 
 }
 
-class JsSrcCpgCreator extends JavaScriptCpgCreator[JsSrc2Cpg] {
+class JsSrcCpgCreator(override val disableSemantics: Boolean) extends JavaScriptCpgCreator[JsSrc2Cpg] {
 
   override val frontend: String = Languages.JSSRC
 

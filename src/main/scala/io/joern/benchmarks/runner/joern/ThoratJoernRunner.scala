@@ -12,7 +12,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class ThoratPythonJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
+class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     extends ThoratPythonRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 

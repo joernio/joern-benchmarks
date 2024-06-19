@@ -8,7 +8,7 @@ import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 
 import scala.util.{Failure, Success}
 
-class ThoratPythonSemgrepRunner(datasetDir: File)
+class ThoratSemgrepRunner(datasetDir: File)
     extends ThoratPythonRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
     with SemgrepBenchmarkRunner {
 

@@ -7,17 +7,8 @@ import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
 import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
-import io.joern.benchmarks.runner.joern.{
-  IchnaeaJoernRunner,
-  OWASPJavaJoernRunner,
-  SecuribenchMicroJoernRunner,
-  ThoratPythonJoernRunner
-}
-import io.joern.benchmarks.runner.semgrep.{
-  IchnaeaSemgrepRunner,
-  SecuribenchMicroSemgrepRunner,
-  ThoratPythonSemgrepRunner
-}
+import io.joern.benchmarks.runner.joern.{IchnaeaJoernRunner, SecuribenchMicroJoernRunner, ThoratJoernRunner}
+import io.joern.benchmarks.runner.semgrep.{IchnaeaSemgrepRunner, SecuribenchMicroSemgrepRunner, ThoratSemgrepRunner}
 import org.slf4j.LoggerFactory
 import upickle.default.*
 
@@ -35,7 +26,7 @@ class Benchmark(config: BenchmarkConfig) {
     def runBenchmark(benchmarkRunnerCreator: BenchmarkConfig => BenchmarkRunner): Unit = {
       val benchmarkRunner = benchmarkRunnerCreator(config)
       val benchmarkName   = benchmarkRunner.benchmarkName
-      logger.info(s"Running $benchmarkName")
+      logger.info(s"Running ${config.benchmark} using ${config.frontend}")
       benchmarkRunner.run() match {
         case Result(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
@@ -50,10 +41,10 @@ class Benchmark(config: BenchmarkConfig) {
       }
     }
 
-    if (config.benchmark == AvailableBenchmarks.ALL) {
-      benchmarkConstructors.values.foreach(runBenchmark)
-    } else {
-      benchmarkConstructors.get(config.benchmark).foreach(runBenchmark)
+    val benchmarkFrontendKey = config.benchmark -> config.frontend
+    benchmarkConstructors.get(benchmarkFrontendKey) match {
+      case Some(runner) => runBenchmark(runner)
+      case None         => logger.error(s"Unsupported benchmark/frontend combination: $benchmarkFrontendKey")
     }
   }
 
@@ -61,25 +52,36 @@ class Benchmark(config: BenchmarkConfig) {
 
 object Benchmark {
 
-  val benchmarkConstructors: Map[AvailableBenchmarks.Value, BenchmarkConfig => BenchmarkRunner] = Map(
-    (AvailableBenchmarks.OWASP_JAVASRC, x => new OWASPJavaJoernRunner(x.datasetDir, JavaSrcCpgCreator())),
-    (AvailableBenchmarks.OWASP_JAVA, x => new OWASPJavaJoernRunner(x.datasetDir, JVMBytecodeCpgCreator())),
+  val benchmarkConstructors
+    : Map[(AvailableBenchmarks.Value, AvailableFrontends.Value), BenchmarkConfig => BenchmarkRunner] = Map(
     (
-      AvailableBenchmarks.SECURIBENCH_MICRO_JAVASRC,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator())
+      AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVASRC,
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator(x.disableSemantics))
     ),
     (
-      AvailableBenchmarks.SECURIBENCH_MICRO_JAVA,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator())
+      AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVA,
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics))
     ),
-    (AvailableBenchmarks.ICHNAEA_JSSRC, x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator())),
-    (AvailableBenchmarks.THORAT_PYSRC, x => new ThoratPythonJoernRunner(x.datasetDir, PySrcCpgCreator())),
-    (AvailableBenchmarks.SECURIBENCH_MICRO_SEMGREP, x => new SecuribenchMicroSemgrepRunner(x.datasetDir)),
-    (AvailableBenchmarks.THORAT_SEMGREP, x => new ThoratPythonSemgrepRunner(x.datasetDir)),
-    (AvailableBenchmarks.ICHNAEA_SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
-    (AvailableBenchmarks.SECURIBENCH_MICRO_CODEQL, x => new SecuribenchMicroCodeQLRunner(x.datasetDir)),
-    (AvailableBenchmarks.THORAT_CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
-    (AvailableBenchmarks.ICHNAEA_CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))
+    (
+      AvailableBenchmarks.ICHNAEA -> AvailableFrontends.JSSRC,
+      x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics))
+    ),
+    (
+      AvailableBenchmarks.THORAT -> AvailableFrontends.PYSRC,
+      x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics))
+    ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.SEMGREP,
+      x => new SecuribenchMicroSemgrepRunner(x.datasetDir)
+    ),
+    (AvailableBenchmarks.THORAT  -> AvailableFrontends.SEMGREP, x => new ThoratSemgrepRunner(x.datasetDir)),
+    (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.CODEQL,
+      x => new SecuribenchMicroCodeQLRunner(x.datasetDir)
+    ),
+    (AvailableBenchmarks.THORAT  -> AvailableFrontends.CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
+    (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))
   )
 
 }

@@ -44,7 +44,7 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
   protected val sinkNames: Set[String] = Set("exec", "eval", "execSync", "execFileSync")
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
-    "ichnaea" -> URI(s"$baseDatasetsUrl/v$benchmarksVersion/$packageName.zip").toURL
+    "ichnaea" -> URI(s"$baseDatasetsUrl/$benchmarksVersion/$packageName.zip").toURL
   )
 
   override protected val benchmarkDirName: String = "ichnaea"

@@ -26,6 +26,9 @@ object Main {
     implicit val availableBenchmarksRead: scopt.Read[AvailableBenchmarks.Value] =
       scopt.Read.reads(AvailableBenchmarks withName _)
 
+    implicit val availableFrontendsRead: scopt.Read[AvailableFrontends.Value] =
+      scopt.Read.reads(AvailableFrontends withName _)
+
     implicit val outputFormatRead: scopt.Read[OutputFormat.Value] =
       scopt.Read.reads(OutputFormat withName _)
 
@@ -42,6 +45,10 @@ object Main {
       .text(s"The benchmark to run. Available [${AvailableBenchmarks.values.mkString(",")}]")
       .required()
       .action((x, c) => c.copy(benchmark = x))
+    arg[AvailableFrontends.Value]("frontend")
+      .text(s"The frontend to use. Available [${AvailableFrontends.values.mkString(",")}]")
+      .required()
+      .action((x, c) => c.copy(frontend = x))
     opt[File]('d', "dataset-dir")
       .text("The dataset directory where benchmarks will be initialized and executed. Default is `./workspace`.")
       .action { (x, c) =>
@@ -55,8 +62,11 @@ object Main {
         c.copy(outputDir = x)
       }
     opt[OutputFormat.Value]('f', "format")
-      .text(s"The output format to write results as. Default is JSON. Available [${OutputFormat.values.mkString(",")}]")
+      .text(s"The output format to write results as. Default is MD. Available [${OutputFormat.values.mkString(",")}]")
       .action((x, c) => c.copy(outputFormat = x))
+    opt[Unit]("disable-semantics")
+      .text(s"Disables the user-defined semantics for Joern data-flows. Has no effect on non-Joern frontends.")
+      .action((x, c) => c.copy(disableSemantics = true))
   }
 
 }
