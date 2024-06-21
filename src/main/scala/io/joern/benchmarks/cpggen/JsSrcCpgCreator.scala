@@ -7,6 +7,8 @@ import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOpti
 import io.joern.dataflowengineoss.semanticsloader.{FlowMapping, FlowSemantic}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JsSrcConfig}
 import io.joern.x2cpg.X2CpgFrontend
+import io.joern.x2cpg.frontendspecific.jssrc2cpg
+import io.joern.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages, Operators}
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 
@@ -25,7 +27,7 @@ sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreat
     sourcesAndSinks: Cpg => BenchmarkSourcesAndSinks = { _ => DefaultBenchmarkSourcesAndSinks() }
   ): Cpg = {
     new OssDataFlow(new OssDataFlowOptions()).run(new LayerCreatorContext(cpg))
-    JsSrc2Cpg.postProcessingPasses(cpg).foreach(_.createAndApply())
+    jssrc2cpg.postProcessingPasses(cpg, XTypeRecoveryConfig()).foreach(_.createAndApply())
     new JavaScriptTaggingPass(cpg, sourcesAndSinks(cpg)).createAndApply()
     new FindingsPass(cpg).createAndApply()
     cpg
