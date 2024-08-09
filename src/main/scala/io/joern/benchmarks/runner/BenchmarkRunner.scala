@@ -17,7 +17,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val baseDatasetsUrl: String   = "https://github.com/joernio/joern-benchmark-datasets/releases/download"
-  val benchmarksVersion: String = "ICSME-2024"
+  val benchmarksVersion: String = "ASYDE-2024"
 
   val benchmarkName: String
 

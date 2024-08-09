@@ -50,11 +50,11 @@ Note: Only results with data-flow traces are considered as findings.
 If `CODEQL` is selected, this requires an installation of CodeQL CLI where `codeql` will be used to
 create the database and run the scans. Custom rules specific to benchmarks can be found under `src/main/resources/codeql`.
 
-## ICSME 2024
+## ASYDE 2024
 
-To reproduce the results for the ICSME tool paper, make sure of the following:
+To reproduce the results for the ASYDE tool paper, make sure of the following:
 
-* This repo is on the `ICSME-2024` tag
+* This repo is on the `ASYDE-2024` tag
 * Semgrep version 1.74.0 is installed
 * CodeQL version 2.17.04 is installed
 
