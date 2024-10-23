@@ -6,7 +6,6 @@ import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
 import io.shiftleft.passes.CpgPass
 import io.shiftleft.semanticcpg.language.*
-import overflowdb.BatchedUpdate
 
 class PythonTaggingPass(cpg: Cpg, sourcesAndSinks: BenchmarkSourcesAndSinks)(implicit
   resolver: ICallResolver = NoResolve

@@ -39,8 +39,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
       s"--language=$language",
       "--overwrite",
       "--build-mode=none"
-    ).mkString(" ")
-    recordTime(() => { ExternalCommand.run(cmd, sourceRoot.parent.pathAsString) }) match {
+    )
+    recordTime(() => { ExternalCommand.run(cmd, sourceRoot.parent.pathAsString).toTry }) match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql database create`! Make sure `codeql` is installed and there is an internet connection."
@@ -67,8 +67,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
         |dependencies:
         |  codeql/$language-all: "*"
         |""".stripMargin)
-    val cmd = Seq("codeql", "pack", "install", tmpDir.name).mkString(" ")
-    ExternalCommand.run(cmd, tmpDir.parent.pathAsString) match {
+    val cmd = Seq("codeql", "pack", "install", tmpDir.name)
+    ExternalCommand.run(cmd, tmpDir.parent.pathAsString).toTry match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql pack install`! Make sure `codeql` is installed and there is an internet connection."
@@ -98,8 +98,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   "--format=sarif-latest",
                   s"--output=${tmpFile.pathAsString}",
                   queryPackDir.pathAsString
-                ).mkString(" ")
-              ExternalCommand.run(command, inputDir.pathAsString) match {
+                )
+              ExternalCommand.run(command, inputDir.pathAsString).toTry match {
                 case Failure(exception) =>
                   logger.error(
                     "Error encountered while executing `codeql database analyze`! Make sure `semgrep` is installed and logged in."

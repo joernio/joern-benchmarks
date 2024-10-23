@@ -5,15 +5,14 @@ import io.joern.benchmarks.passes.{FindingsPass, PythonTaggingPass}
 import io.joern.benchmarks.runner.{BenchmarkSourcesAndSinks, DefaultBenchmarkSourcesAndSinks}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.dataflowengineoss.semanticsloader.{FlowMapping, FlowSemantic}
-import io.joern.pysrc2cpg.{
+import io.joern.pysrc2cpg.{Py2CpgOnFileSystem as PySrc2Cpg, Py2CpgOnFileSystemConfig as PySrcConfig}
+import io.joern.x2cpg.frontendspecific.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   ImportsPass,
   PythonImportResolverPass,
   PythonInheritanceNamePass,
   PythonTypeHintCallLinker,
-  PythonTypeRecoveryPassGenerator,
-  Py2CpgOnFileSystem as PySrc2Cpg,
-  Py2CpgOnFileSystemConfig as PySrcConfig
+  PythonTypeRecoveryPassGenerator
 }
 import io.joern.x2cpg.X2CpgFrontend
 import io.joern.x2cpg.passes.base.AstLinkerPass

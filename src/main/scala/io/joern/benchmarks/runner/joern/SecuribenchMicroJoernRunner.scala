@@ -60,7 +60,7 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
   })
 
   class SecuribenchMicroSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
-    override def sources: Traversal[CfgNode] =
+    override def sources: Iterator[CfgNode] =
       cpg.parameter.and(_.index(1), _.method.name("foo"), _.typeFullNameExact("java.lang.Object"))
   }
 

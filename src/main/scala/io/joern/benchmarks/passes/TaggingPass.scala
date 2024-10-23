@@ -4,7 +4,6 @@ import io.shiftleft.codepropertygraph.generated.nodes.CfgNode
 import io.joern.benchmarks.runner.BenchmarkSourcesAndSinks
 import io.shiftleft.passes.CpgPass
 import io.joern.benchmarks.*
-import overflowdb.BatchedUpdate
 
 trait TaggingPass(sourcesAndSinks: BenchmarkSourcesAndSinks) { this: CpgPass =>
 

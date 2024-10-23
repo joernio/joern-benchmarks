@@ -33,16 +33,16 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
       case None    => ""
     }
     val command =
-      (Seq(
+      Seq(
         "semgrep",
         "scan",
         "--no-git-ignore",
         "--json",
         "--config auto",
         "-q"
-      ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString)
-        .mkString(" ")
-    ExternalCommand.run(command, inputDir.pathAsString) match {
+      ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString
+
+    ExternalCommand.run(command, inputDir.pathAsString).toTry match {
       case Failure(exception) =>
         logger.error("Error encountered while executing SemGrep scan! Make sure `semgrep` is installed and logged in.")
         Failure(exception)

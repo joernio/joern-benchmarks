@@ -56,15 +56,17 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     val cwd           = benchmarkBaseDir.pathAsString
     val sinkLocations = mutable.Map.empty[String, Boolean]
 
-    ExternalCommand.run("grep -rn '/* BAD' .", cwd) match {
-      case Failure(exception) => logger.error(s"Unable to query for tainted sinks in $cwd")
-      case Success(output) =>
-        output.flatMap(splitLine).foreach { x => sinkLocations.put(x, true) }
+    ExternalCommand.run(Seq("grep", "-rn", "'/* BAD'", "."), cwd) match {
+      case ExternalCommand.ExternalCommandResult(0, stdOut, _) =>
+        stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
+      case ExternalCommand.ExternalCommandResult(_, _, stdErr) =>
+        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: $stdErr")
     }
-    ExternalCommand.run("grep -rn '/* OK' .", cwd) match {
-      case Failure(exception) => logger.error(s"Unable to query for tainted sinks in $cwd")
-      case Success(output) =>
-        output.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
+    ExternalCommand.run(Seq("grep", "-rn", "'/* OK'", "."), cwd) match {
+      case ExternalCommand.ExternalCommandResult(0, stdOut, _) =>
+        stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
+      case ExternalCommand.ExternalCommandResult(_, _, stdErr) =>
+        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: $stdErr")
     }
     sinkLocations.toMap
   }
