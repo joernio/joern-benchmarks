@@ -1,9 +1,8 @@
 package io.joern.benchmarks.runner.semgrep
 
 import better.files.File
-import io.joern.benchmarks.runner.BenchmarkRunner
 import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepFindings
-import io.joern.x2cpg.utils.ExternalCommand
+import io.joern.benchmarks.runner.{BenchmarkRunner, runCmd}
 import upickle.default.*
 
 import scala.util.{Failure, Success, Try, Using}
@@ -33,16 +32,16 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
       case None    => ""
     }
     val command =
-      Seq(
+      (Seq(
         "semgrep",
         "scan",
         "--no-git-ignore",
         "--json",
         "--config auto",
         "-q"
-      ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString
+      ) ++ customCommands :+ customRulePath :+ inputDir.pathAsString).mkString(" ")
 
-    ExternalCommand.run(command, inputDir.pathAsString).toTry match {
+    runCmd(command, inputDir.toJava).toTry match {
       case Failure(exception) =>
         logger.error("Error encountered while executing SemGrep scan! Make sure `semgrep` is installed and logged in.")
         Failure(exception)

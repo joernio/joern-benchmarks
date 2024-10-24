@@ -3,14 +3,11 @@ package io.joern.benchmarks.runner
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner
-import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner
-import io.joern.x2cpg.utils.ExternalCommand
 import org.slf4j.LoggerFactory
 
 import java.net.{URI, URL}
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
@@ -53,20 +50,20 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
       }
     }
 
-    val cwd           = benchmarkBaseDir.pathAsString
+    val cwd           = File(benchmarkBaseDir.pathAsString).toJava
     val sinkLocations = mutable.Map.empty[String, Boolean]
 
-    ExternalCommand.run(Seq("grep", "-rn", "'/* BAD'", "."), cwd) match {
-      case ExternalCommand.ExternalCommandResult(0, stdOut, _) =>
-        stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
-      case ExternalCommand.ExternalCommandResult(_, _, stdErr) =>
-        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: $stdErr")
+    runCmd(Seq("grep", "-rn", "'/* BAD'", ".").mkString(" "), cwd) match {
+      case RunOutput(0, stdOut, _) =>
+        stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, true) }
+      case RunOutput(_, _, stdErr) =>
+        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
-    ExternalCommand.run(Seq("grep", "-rn", "'/* OK'", "."), cwd) match {
-      case ExternalCommand.ExternalCommandResult(0, stdOut, _) =>
+    runCmd(Seq("grep", "-rn", "'/* OK'", ".").mkString(" "), cwd) match {
+      case RunOutput(0, stdOut, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
-      case ExternalCommand.ExternalCommandResult(_, _, stdErr) =>
-        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: $stdErr")
+      case RunOutput(_, _, stdErr) =>
+        logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
     sinkLocations.toMap
   }

@@ -1,14 +1,13 @@
 package io.joern.benchmarks.runner.codeql
 
 import better.files.File
-import io.joern.benchmarks.runner.BenchmarkRunner
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.{
   CodeQLFindings,
   CodeQLPhysicalLocation,
   CodeQLSimpleFindings,
   CodeQLSimpleResult
 }
-import io.joern.x2cpg.utils.ExternalCommand
+import io.joern.benchmarks.runner.{BenchmarkRunner, runCmd}
 import upickle.default.*
 
 import scala.util.{Failure, Success, Try, Using}
@@ -39,8 +38,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
       s"--language=$language",
       "--overwrite",
       "--build-mode=none"
-    )
-    recordTime(() => { ExternalCommand.run(cmd, sourceRoot.parent.pathAsString).toTry }) match {
+    ).mkString(" ")
+    recordTime(() => { runCmd(cmd, sourceRoot.parent.toJava).toTry }) match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql database create`! Make sure `codeql` is installed and there is an internet connection."
@@ -67,8 +66,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
         |dependencies:
         |  codeql/$language-all: "*"
         |""".stripMargin)
-    val cmd = Seq("codeql", "pack", "install", tmpDir.name)
-    ExternalCommand.run(cmd, tmpDir.parent.pathAsString).toTry match {
+    val cmd = Seq("codeql", "pack", "install", tmpDir.name).mkString(" ")
+    runCmd(cmd, tmpDir.parent.toJava).toTry match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql pack install`! Make sure `codeql` is installed and there is an internet connection."
@@ -98,8 +97,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   "--format=sarif-latest",
                   s"--output=${tmpFile.pathAsString}",
                   queryPackDir.pathAsString
-                )
-              ExternalCommand.run(command, inputDir.pathAsString).toTry match {
+                ).mkString(" ")
+              runCmd(command, inputDir.toJava).toTry match {
                 case Failure(exception) =>
                   logger.error(
                     "Error encountered while executing `codeql database analyze`! Make sure `semgrep` is installed and logged in."
