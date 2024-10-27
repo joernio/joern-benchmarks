@@ -50,38 +50,10 @@ Note: Only results with data-flow traces are considered as findings.
 If `CODEQL` is selected, this requires an installation of CodeQL CLI where `codeql` will be used to
 create the database and run the scans. Custom rules specific to benchmarks can be found under `src/main/resources/codeql`.
 
-## ASYDE 2024
+## Notes
 
-To reproduce the results for the ASYDE tool paper, make sure of the following:
+Benchmarks successfully tested on the following versions of target software:
 
-* This repo is on the `ASYDE-2024` tag
-* Semgrep version 1.74.0 is installed
-* CodeQL version 2.17.04 is installed
-
-The following headers provide commands to reproduce the results in Table 1. See the `./results` directory for the output.
-
-#### Joern
-
-* `joern-benchmarks SECURIBENCH_MICRO JAVASRC --disable-semantics`
-* `joern-benchmarks THORAT PYSRC --disable-semantics`
-* `joern-benchmarks ICHNAEA JSSRC --disable-semantics`
-
-#### Joern*
-
-* `joern-benchmarks SECURIBENCH_MICRO JAVASRC`
-* `joern-benchmarks THORAT PYSRC`
-* `joern-benchmarks ICHNAEA JSSRC`
-
-#### Semgrep
-
-* `joern-benchmarks SECURIBENCH_MICRO SEMGREP`
-* `joern-benchmarks THORAT SEMGREP`
-* `joern-benchmarks ICHNAEA SEMGREP`
-
-#### CodeQL
-
-* `joern-benchmarks SECURIBENCH_MICRO SEMGREP`
-* `joern-benchmarks THORAT SEMGREP`
-* `joern-benchmarks ICHNAEA SEMGREP`
-
-Note: Joern and Joern* results overwrite one another.
+* Joern v4.0.119
+* Semgrep v1.93.0 
+* CodeQL v2.19.2
