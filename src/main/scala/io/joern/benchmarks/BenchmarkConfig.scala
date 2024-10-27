@@ -8,7 +8,9 @@ case class BenchmarkConfig(
   datasetDir: File = File("workspace"),
   outputDir: File = File("results"),
   outputFormat: OutputFormat.Value = OutputFormat.MD,
-  disableSemantics: Boolean = false
+  disableSemantics: Boolean = false,
+  maxCallDepth: Int = 4,
+  iterations: Int = 1
 )
 
 object AvailableBenchmarks extends Enumeration {

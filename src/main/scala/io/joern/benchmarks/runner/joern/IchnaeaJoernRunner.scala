@@ -23,7 +23,7 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     cpg.findings.map(mapToFindingInfo).l
   }
 
-  override def run(): Result = {
+  override def runIteration: Result = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)

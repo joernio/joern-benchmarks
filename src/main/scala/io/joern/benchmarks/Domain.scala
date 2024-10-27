@@ -22,7 +22,7 @@ object Domain {
 
   /** The result of a benchmark.
     */
-  case class Result(entries: List[TestEntry] = Nil, time: Double = 0d) {
+  case class Result(entries: List[TestEntry] = Nil, times: List[Double] = Nil) {
 
     /** @return
       *   When a benchmark tests for false/true positives/negatives, this will be the <a
@@ -50,6 +50,26 @@ object Domain {
     def fp: Double = entries.count(_.outcome == TestOutcome.FP).toDouble
     def tn: Double = entries.count(_.outcome == TestOutcome.TN).toDouble
     def fn: Double = entries.count(_.outcome == TestOutcome.FN).toDouble
+
+    def meanTime: Double = {
+      if (times.nonEmpty) {
+        times.sum / times.size
+      } else {
+        0.0
+      }
+    }
+
+    def stderrTime: Double = {
+      val iterations = times.size
+      if (times.nonEmpty) {
+        val average           = meanTime
+        val variance          = times.map(t => math.pow(t - average, 2)).sum / (iterations - 1)
+        val standardDeviation = math.sqrt(variance)
+        standardDeviation / math.sqrt(iterations)
+      } else {
+        0.0
+      }
+    }
 
     @targetName("appendAll")
     def ++(o: Result): Result = {

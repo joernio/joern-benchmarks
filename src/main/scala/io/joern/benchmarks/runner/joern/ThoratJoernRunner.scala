@@ -25,7 +25,7 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
       .l
   }
 
-  override def run(): Result = {
+  override def runIteration: Result = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)

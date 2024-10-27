@@ -66,6 +66,20 @@ object Main {
     opt[Unit]("disable-semantics")
       .text(s"Disables the user-defined semantics for Joern data-flows. Has no effect on non-Joern frontends.")
       .action((x, c) => c.copy(disableSemantics = true))
+    opt[Int]('k', "max-call-depth")
+      .text("The max call depth `k` for the data-flow engine. Has no effect on non-Joern frontends. Default is 4.")
+      .validate {
+        case x if x < 0 => failure("Max call depth must be greater than or equal to 0.")
+        case _          => success
+      }
+      .action((x, c) => c.copy(maxCallDepth = x))
+    opt[Int]('i', "iterations")
+      .text("The number of iterations for a given benchmark. Default is 1.")
+      .validate {
+        case x if x <= 0 => failure("Iterations must be greater than 0.")
+        case _           => success
+      }
+      .action((x, c) => c.copy(iterations = x))
   }
 
 }

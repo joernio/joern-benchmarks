@@ -48,7 +48,8 @@ sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
 }
 
-class JavaSrcCpgCreator(override val disableSemantics: Boolean) extends JavaCpgCreator[JavaSrc2Cpg] {
+class JavaSrcCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+    extends JavaCpgCreator[JavaSrc2Cpg] {
 
   override val frontend: String = Languages.JAVASRC
 
@@ -62,7 +63,8 @@ class JavaSrcCpgCreator(override val disableSemantics: Boolean) extends JavaCpgC
 
 }
 
-class JVMBytecodeCpgCreator(override val disableSemantics: Boolean) extends JavaCpgCreator[Jimple2Cpg] {
+class JVMBytecodeCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+    extends JavaCpgCreator[Jimple2Cpg] {
 
   override val frontend: String = Languages.JAVA
 

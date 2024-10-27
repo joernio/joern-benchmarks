@@ -51,7 +51,7 @@ sealed trait PythonCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
     new PythonTypeHintCallLinker(cpg).createAndApply()
     new NaiveCallLinker(cpg).createAndApply()
 
-    // Some of passes above create new methods, so, we
+    // Some of the passes above create new methods, so, we
     // need to run the ASTLinkerPass one more time
     new AstLinkerPass(cpg).createAndApply()
     new PythonTaggingPass(cpg, sourcesAndSinks(cpg)).createAndApply()
@@ -66,7 +66,8 @@ sealed trait PythonCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
 }
 
-class PySrcCpgCreator(override val disableSemantics: Boolean) extends PythonCpgCreator[PySrc2Cpg] {
+class PySrcCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+    extends PythonCpgCreator[PySrc2Cpg] {
 
   override val frontend: String = Languages.PYTHONSRC
 
