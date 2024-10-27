@@ -23,7 +23,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
       .toList
   }
 
-  override def run(): Domain.Result = {
+  override def runIteration: Domain.Result = {
     val rules = getRules("SecuribenchMicroRules")
     runScan(benchmarkBaseDir, Seq.empty, rules) match {
       case Failure(exception) =>

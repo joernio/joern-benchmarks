@@ -6,7 +6,7 @@ import io.joern.benchmarks.Domain.*
 import upickle.default.*
 
 import java.net.{URI, URL}
-import scala.util.{Try}
+import scala.util.Try
 
 abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
@@ -69,9 +69,5 @@ abstract class IchnaeaRunner(datasetDir: File, creatorLabel: String)
         case x                     => throw RuntimeException(s"Unexpected value type for URL strings: ${x.getClass}")
       }
     )
-
-  case class NPMRegistryResponse(dist: NPMDistBody) derives ReadWriter
-
-  case class NPMDistBody(tarball: URL) derives ReadWriter
 
 }

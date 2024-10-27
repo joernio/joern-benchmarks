@@ -6,7 +6,7 @@ import better.files.File
 
 package object formatting {
 
-  sealed trait ResultFormatter(result: Result) {
+  sealed trait ResultFormatter {
 
     /** Exports the results to the output directory using the format of the implementing class.
       * @param outputDir
@@ -15,7 +15,7 @@ package object formatting {
     def writeTo(outputDir: File): Unit
   }
 
-  private class JsonFormatter(result: Result) extends ResultFormatter(result) {
+  private class JsonFormatter(result: Result) extends ResultFormatter {
     override def writeTo(outputDir: File): Unit = {
       (outputDir / "results.json").fileOutputStream().apply { fos =>
         upickle.default.writeToOutputStream(result, fos, indent = 2)
@@ -23,7 +23,7 @@ package object formatting {
     }
   }
 
-  private class CsvFormatter(result: Result) extends ResultFormatter(result) {
+  private class CsvFormatter(result: Result) extends ResultFormatter {
     override def writeTo(outputDir: File): Unit = {
       (outputDir / "test_results.csv").bufferedWriter.apply { bw =>
         bw.write("test_name,outcome\n")
@@ -33,26 +33,30 @@ package object formatting {
       }
       (outputDir / "metrics.csv").bufferedWriter.apply { bw =>
         bw.write("name,value\n")
-        bw.write(f"time_seconds,${result.time}%1.2f\n")
+        bw.write(f"mean_time (s),${result.meanTime}%1.2f\n")
+        bw.write(f"stderr_time (s),${result.stderrTime}%1.2f\n")
+        bw.write(s"iterations,${result.times.size}\n")
         bw.write(f"j_index,${result.jIndex}%1.3f\n")
         bw.write(f"f_score,${result.fscore}%1.3f\n")
         bw.write(s"true_positive,${result.tp}\n")
-        bw.write(s"false_postive,${result.fp}\n")
+        bw.write(s"false_positive,${result.fp}\n")
         bw.write(s"true_negative,${result.tn}\n")
         bw.write(s"false_negative,${result.fn}\n")
       }
     }
   }
 
-  private class MarkdownFormatter(result: Result) extends ResultFormatter(result) {
+  private class MarkdownFormatter(result: Result) extends ResultFormatter {
     override def writeTo(outputDir: File): Unit = {
       (outputDir / "results.md").bufferedWriter.apply { fos =>
         fos.write("# Statistics\n\n")
-        fos.write(f"Time (s): ${result.time}%1.2f\n")
-        fos.write(f"J Index: ${result.jIndex}%1.3f\n")
-        fos.write(f"F Score: ${result.fscore}%1.3f\n")
-        fos.write(s"TP: ${result.tp} | FP: ${result.fp}\n")
-        fos.write(s"TN: ${result.tn} | FN: ${result.fn}\n")
+        fos.write(f"Avg. Time (s): ${result.meanTime}%1.2f  \n")
+        fos.write(f"StdErr Time (s): ${result.stderrTime}%1.2f  \n")
+        fos.write(s"Iterations: ${result.times.size}  \n")
+        fos.write(f"J Index: ${result.jIndex}%1.3f  \n")
+        fos.write(f"F Score: ${result.fscore}%1.3f  \n")
+        fos.write(s"TP: ${result.tp} | FP: ${result.fp}  \n")
+        fos.write(s"TN: ${result.tn} | FN: ${result.fn}  \n")
         fos.write("\n# Test Outcomes \n\n")
         fos.write("|Test Name|Outcome|\n")
         fos.write("|---|---|\n")

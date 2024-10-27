@@ -40,7 +40,8 @@ sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreat
 
 }
 
-class JsSrcCpgCreator(override val disableSemantics: Boolean) extends JavaScriptCpgCreator[JsSrc2Cpg] {
+class JsSrcCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+    extends JavaScriptCpgCreator[JsSrc2Cpg] {
 
   override val frontend: String = Languages.JSSRC
 

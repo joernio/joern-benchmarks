@@ -27,17 +27,14 @@ class Benchmark(config: BenchmarkConfig) {
       val benchmarkRunner = benchmarkRunnerCreator(config)
       val benchmarkName   = benchmarkRunner.benchmarkName
       logger.info(s"Running ${config.benchmark} using ${config.frontend}")
-      benchmarkRunner.run() match {
+      benchmarkRunner.run(config.iterations) match {
         case Result(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
+          val targetOutputFile =
+            config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
           formatterConstructors
             .get(config.outputFormat)
-            .foreach(
-              _.apply(result.copy(time = benchmarkRunner.timeSeconds))
-                .writeTo(
-                  config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
-                )
-            )
+            .foreach(_.apply(result).writeTo(targetOutputFile))
       }
     }
 
@@ -56,19 +53,19 @@ object Benchmark {
     : Map[(AvailableBenchmarks.Value, AvailableFrontends.Value), BenchmarkConfig => BenchmarkRunner] = Map(
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVASRC,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator(x.disableSemantics))
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVA,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics))
+      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
       AvailableBenchmarks.ICHNAEA -> AvailableFrontends.JSSRC,
-      x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics))
+      x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
       AvailableBenchmarks.THORAT -> AvailableFrontends.PYSRC,
-      x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics))
+      x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.SEMGREP,

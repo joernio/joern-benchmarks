@@ -21,7 +21,7 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File)
       .map(_ => FindingInfo())
   }
 
-  override def run(): Domain.Result = {
+  override def runIteration: Domain.Result = {
     val rules = getRules("SecuribenchMicro").toList
     runScan(benchmarkBaseDir / "src", "java", rules) match {
       case Failure(exception) =>

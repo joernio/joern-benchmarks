@@ -16,7 +16,7 @@ class IchnaeaCodeQLRunner(datasetDir: File)
     cqlResults.findings.map(_ => FindingInfo()) // Simply, if there are findings then there is a positive
   }
 
-  override def run(): Result = {
+  override def runIteration: Result = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)

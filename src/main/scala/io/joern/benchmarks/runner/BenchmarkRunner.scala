@@ -8,6 +8,8 @@ import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.lang
+import scala.collection.mutable
+import scala.compiletime.uninitialized
 import scala.util.Try
 
 /** A process that runs a benchmark.
@@ -17,14 +19,16 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val baseDatasetsUrl: String   = "https://github.com/joernio/joern-benchmark-datasets/releases/download"
-  val benchmarksVersion: String = "ASYDE-2024"
+  val benchmarksVersion: String = "v0.10.0"
 
   val benchmarkName: String
 
-  private var totalTime = 0L
+  protected var currIter: Int      = 0
+  private var times: Array[Double] = uninitialized
 
-  def timeSeconds: Double = {
-    totalTime / 1_000_000_000.0;
+  def timeSeconds: List[Double] = {
+    for { i <- times.indices } times(i) /= 1_000_000_000.0
+    times.toList
   }
 
   /** Records the wall clock time taken for the given function to execute.
@@ -32,7 +36,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   def recordTime[T](f: () => T): T = {
     val start  = System.nanoTime()
     val result = f()
-    totalTime += System.nanoTime() - start
+    times(currIter) += System.nanoTime() - start
     result
   }
 
@@ -59,14 +63,27 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     findings(testName) match {
       case Nil if flowExists => TestOutcome.FN
       case Nil               => TestOutcome.TN
-      case xs if flowExists  => TestOutcome.TP
+      case _ if flowExists   => TestOutcome.TP
       case _                 => TestOutcome.FP
     }
   }
 
   /** The main benchmark runner entrypoint
     */
-  def run(): Result
+  def run(iterations: Int): Result = {
+    times = Array.ofDim(iterations)
+    var result: Option[Result] = None
+    for {
+      _ <- 0 until iterations
+    } {
+      val iterResult = runIteration
+      if result.isEmpty then result = Some(iterResult)
+      currIter += 1
+    }
+    result.getOrElse(Result()).copy(times = timeSeconds)
+  }
+
+  protected def runIteration: Result
 
 }
 
