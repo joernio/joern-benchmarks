@@ -1,14 +1,13 @@
 package io.joern.benchmarks.runner.codeql
 
 import better.files.File
-import io.joern.benchmarks.runner.BenchmarkRunner
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.{
   CodeQLFindings,
   CodeQLPhysicalLocation,
   CodeQLSimpleFindings,
   CodeQLSimpleResult
 }
-import io.joern.x2cpg.utils.ExternalCommand
+import io.joern.benchmarks.runner.{BenchmarkRunner, runCmd}
 import upickle.default.*
 
 import scala.util.{Failure, Success, Try, Using}
@@ -40,7 +39,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
       "--overwrite",
       "--build-mode=none"
     ).mkString(" ")
-    recordTime(() => { ExternalCommand.run(cmd, sourceRoot.parent.pathAsString) }) match {
+    recordTime(() => { runCmd(cmd, sourceRoot.parent.toJava).toTry }) match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql database create`! Make sure `codeql` is installed and there is an internet connection."
@@ -68,7 +67,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
         |  codeql/$language-all: "*"
         |""".stripMargin)
     val cmd = Seq("codeql", "pack", "install", tmpDir.name).mkString(" ")
-    ExternalCommand.run(cmd, tmpDir.parent.pathAsString) match {
+    runCmd(cmd, tmpDir.parent.toJava).toTry match {
       case Failure(exception) =>
         logger.error(
           "Error encountered while executing `codeql pack install`! Make sure `codeql` is installed and there is an internet connection."
@@ -99,7 +98,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                   s"--output=${tmpFile.pathAsString}",
                   queryPackDir.pathAsString
                 ).mkString(" ")
-              ExternalCommand.run(command, inputDir.pathAsString) match {
+              runCmd(command, inputDir.toJava).toTry match {
                 case Failure(exception) =>
                   logger.error(
                     "Error encountered while executing `codeql database analyze`! Make sure `semgrep` is installed and logged in."

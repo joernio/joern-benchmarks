@@ -9,6 +9,7 @@ import io.joern.benchmarks.runner.*
 import io.joern.dataflowengineoss.language.*
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
+import io.shiftleft.codepropertygraph.generated.language.*
 import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.immutable.List
@@ -118,10 +119,8 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         (possiblyExposedFunctions ++ exposedObjectsSource ++ assignedToExportedObject ++ fieldsOfExposedObjects ++ mayBeExposed).l
       val exposedLocalsViaCapture = allExposedMethods._refIn // no great way to do this yet
         .collectAll[MethodRef]
-        .outE("CAPTURE")
-        .inV
-        .outE
-        .inV
+        .out("CAPTURE")
+        .out
         .collectAll[Local]
         .referencingIdentifiers
         .l

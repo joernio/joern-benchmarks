@@ -1,7 +1,6 @@
 package io.joern.benchmarks.passes
 
 import io.shiftleft.passes.CpgPass
-import overflowdb.BatchedUpdate
 import io.shiftleft.semanticcpg.language.*
 import io.joern.benchmarks.*
 import io.joern.dataflowengineoss.language.*

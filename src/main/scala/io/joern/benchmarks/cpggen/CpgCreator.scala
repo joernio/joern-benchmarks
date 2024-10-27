@@ -4,7 +4,7 @@ import better.files.File
 import io.joern.benchmarks.runner.{BenchmarkSourcesAndSinks, DefaultBenchmarkSourcesAndSinks}
 import io.joern.dataflowengineoss.DefaultSemantics
 import io.joern.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
-import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, Semantics}
+import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, FullNameSemantics, Semantics}
 import io.shiftleft.codepropertygraph.generated.Cpg
 
 import scala.util.Try
@@ -15,8 +15,8 @@ trait CpgCreator {
   protected val disableSemantics: Boolean
 
   protected implicit lazy val semantics: Semantics =
-    if disableSemantics then Semantics.fromList(Nil)
-    else Semantics.fromList(DefaultSemantics.operatorFlows ++ extraSemantics)
+    if disableSemantics then FullNameSemantics.fromList(Nil)
+    else FullNameSemantics.fromList(DefaultSemantics.operatorFlows ++ extraSemantics)
   protected implicit lazy val engineContext: EngineContext = EngineContext(semantics)
 
   protected def extraSemantics: List[FlowSemantic] = Nil

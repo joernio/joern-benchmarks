@@ -6,7 +6,6 @@ import io.joern.x2cpg.X2Cpg.applyDefaultOverlays
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.passes.CpgPass
 import io.shiftleft.semanticcpg.language.*
-import overflowdb.BatchedUpdate
 import org.slf4j.LoggerFactory
 import scopt.OptionParser
 

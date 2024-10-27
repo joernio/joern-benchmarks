@@ -1,19 +1,19 @@
 package io.joern
 
+import flatgraph.DiffGraphBuilder
 import io.shiftleft.codepropertygraph.generated.{Cpg, NodeTypes}
-import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding, Method, StoredNode}
+import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
-import overflowdb.BatchedUpdate.DiffGraphBuilder
-import overflowdb.traversal.*
-import overflowdb.traversal.help.{Doc, DocSearchPackages, Traversal, TraversalSource}
+import flatgraph.help.{Doc, DocSearchPackages, Traversal, TraversalSource}
 
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.*
 
 package object benchmarks {
 
   // provides package names to search for @Doc annotations etc
   implicit val docSearchPackages: DocSearchPackages =
-    () => io.shiftleft.codepropertygraph.Cpg.docSearchPackages() :+ this.getClass.getPackageName
+    Cpg.defaultDocSearchPackage
+      .withAdditionalPackage(this.getClass.getPackageName)
 
   implicit def toBenchmarkStarters(cpg: Cpg): BenchmarkStarters =
     new BenchmarkStarters(cpg)
@@ -26,7 +26,7 @@ package object benchmarks {
   class BenchmarkStarters(cpg: Cpg) {
 
     def findings: Iterator[Finding] =
-      cpg.graph.nodes(NodeTypes.FINDING).asScala.cast[Finding]
+      cpg.graph.nodes(NodeTypes.FINDING).cast[Finding]
 
     def sources: Iterator[CfgNode] =
       cpg.all.where(_.tag.name("SOURCE")).collectAll[CfgNode]
