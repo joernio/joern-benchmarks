@@ -75,7 +75,7 @@ class PySrcCpgCreator(override val disableSemantics: Boolean, override val maxCa
     inputDir: File,
     sourcesAndSinks: Cpg => BenchmarkSourcesAndSinks = { _ => DefaultBenchmarkSourcesAndSinks() }
   ): Try[Cpg] = {
-    val config = PySrcConfig().withInputPath(inputDir.pathAsString)
+    val config = PySrcConfig().withInputPath(inputDir.pathAsString).withIgnoreDirNames(Seq("test", "tests"))
     PySrc2Cpg().createCpgWithOverlays(config).map(runPythonOverlays(_, config, sourcesAndSinks))
   }
 

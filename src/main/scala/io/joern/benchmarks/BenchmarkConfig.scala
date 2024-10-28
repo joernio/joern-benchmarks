@@ -17,6 +17,8 @@ object AvailableBenchmarks extends Enumeration {
   val SECURIBENCH_MICRO = Value
   val ICHNAEA           = Value
   val THORAT            = Value
+  val BUGS_IN_PY        = Value
+  val DEFECTS4J         = Value
 }
 
 object AvailableFrontends extends Enumeration {

@@ -51,6 +51,7 @@ object Benchmark {
 
   val benchmarkConstructors
     : Map[(AvailableBenchmarks.Value, AvailableFrontends.Value), BenchmarkConfig => BenchmarkRunner] = Map(
+    // JOERN
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVASRC,
       x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
@@ -68,11 +69,17 @@ object Benchmark {
       x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
+      AvailableBenchmarks.BUGS_IN_PY -> AvailableFrontends.PYSRC,
+      x => new BugsInPyJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+    ),
+    // SEMGREP
+    (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.SEMGREP,
       x => new SecuribenchMicroSemgrepRunner(x.datasetDir)
     ),
     (AvailableBenchmarks.THORAT  -> AvailableFrontends.SEMGREP, x => new ThoratSemgrepRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
+    // CODEQL
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.CODEQL,
       x => new SecuribenchMicroCodeQLRunner(x.datasetDir)
