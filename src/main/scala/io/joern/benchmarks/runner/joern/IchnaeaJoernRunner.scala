@@ -139,7 +139,8 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
           case _ => Iterator.empty
         }
       }
-      growlCall
+      val otherSinks = cpg.call.nameExact("exec", "eval", "execSync", "execFileSync").argument(1)
+      growlCall ++ otherSinks
     }
 
   }
