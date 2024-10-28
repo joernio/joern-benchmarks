@@ -45,6 +45,6 @@ abstract class Defects4jRunner(datasetDir: File, creatorLabel: String)
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
 
-  protected def getExpectedTestOutcomes: Map[String, Boolean] = Map.empty
+  protected def getExpectedTestOutcomes: Map[String, Boolean] = packageNames.map(x => x -> false).toMap
 
 }

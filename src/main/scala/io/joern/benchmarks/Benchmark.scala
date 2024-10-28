@@ -1,13 +1,12 @@
 package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
-import io.joern.benchmarks.formatting.formatterConstructors
-import io.joern.benchmarks.runner.BenchmarkRunner
-import org.slf4j.LoggerFactory
 import io.joern.benchmarks.Domain.*
 import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
+import io.joern.benchmarks.formatting.formatterConstructors
+import io.joern.benchmarks.runner.BenchmarkRunner
 import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
-import io.joern.benchmarks.runner.joern.{IchnaeaJoernRunner, SecuribenchMicroJoernRunner, ThoratJoernRunner}
+import io.joern.benchmarks.runner.joern.*
 import io.joern.benchmarks.runner.semgrep.{IchnaeaSemgrepRunner, SecuribenchMicroSemgrepRunner, ThoratSemgrepRunner}
 import org.slf4j.LoggerFactory
 import upickle.default.*
@@ -71,6 +70,10 @@ object Benchmark {
     (
       AvailableBenchmarks.BUGS_IN_PY -> AvailableFrontends.PYSRC,
       x => new BugsInPyJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+    ),
+    (
+      AvailableBenchmarks.DEFECTS4J -> AvailableFrontends.JAVA,
+      x => new Defects4jJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     // SEMGREP
     (

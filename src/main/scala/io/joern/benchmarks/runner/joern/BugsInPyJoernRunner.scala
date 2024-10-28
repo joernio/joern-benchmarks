@@ -36,7 +36,7 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
     val outcomes = getExpectedTestOutcomes
     packageNames
       .map { packageName =>
-        val inputDir = benchmarkBaseDir / packageName / "package"
+        val inputDir = benchmarkBaseDir / packageName
         cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg)) match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
