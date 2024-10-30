@@ -3,34 +3,30 @@ package io.joern.benchmarks.runner.joern
 import better.files.File
 import io.joern.benchmarks.*
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JavaCpgCreator, JavaScriptCpgCreator, PySrcCpgCreator}
+import io.joern.benchmarks.cpggen.JavaCpgCreator
 import io.joern.benchmarks.runner.*
-import io.joern.dataflowengineoss.language.*
+import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.language.*
 import io.shiftleft.codepropertygraph.generated.nodes.*
-import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.semanticcpg.language.*
 
-import scala.collection.immutable.List
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{Failure, Success}
 
 class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
     extends Defects4jRunner(datasetDir, cpgCreator.frontend, cpgCreator.maxCallDepth) {
 
   override def runIteration: BaseResult = {
-    val entries = mutable.ArraySeq.empty[PerfRun]
-    packageNames
-      .map { packageName =>
-        val inputDir = benchmarkBaseDir / packageName
-        recordTime(() => cpgCreator.createCpg(inputDir, cpg => Defects4jSourcesAndSinks(cpg))) match {
-          case Failure(exception) =>
-            logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-            PerfRun(packageName, -1L)
-          case Success(cpg) =>
-            PerfRun(packageName, getTimeSeconds)
-        }
+    val entries = mutable.ArrayBuffer.empty[PerfRun]
+    packageNames.foreach { packageName =>
+      val inputDir = benchmarkBaseDir / packageName
+      recordTime(() => cpgCreator.createCpg(inputDir, cpg => Defects4jSourcesAndSinks(cpg))) match {
+        case Failure(exception) =>
+          logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
+        case Success(_) =>
+          entries.addOne(PerfRun(packageName, getTimeSeconds))
       }
+    }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)
   }
 

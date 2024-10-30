@@ -23,6 +23,11 @@ A benchmarking suite for Joern
   --disable-semantics      Disables the user-defined semantics for Joern data-flows. Has no effect on non-Joern frontends.
 ```
 
+Example of testing for various values of `k`:
+```
+for k in {0..5}; do ./joern-benchmarks DEFECTS4J JAVA -f CSV -J-Xmx8G -i 1 -k $k; done 
+```
+
 ## Data-Flow Benchmarks
 
 The benchmark naming convention of `<BENCHMARK>_<FRONTEND>`, e.g. `OWASP_JAVA` runs `OWASP` using the `jimple2cpg`

@@ -36,8 +36,10 @@ package object formatting {
     override def writeTo(outputDir: File): Unit = {
       result match {
         case result @ PerformanceTestResult(entries, k) =>
+          val targetFile = outputDir / "perf_results.csv"
+          val exists     = targetFile.exists
           (outputDir / "perf_results.csv").bufferedWriter(openOptions = OpenOptions.append).apply { bw =>
-            bw.write("test_name,k,time\n")
+            if !exists then bw.write("test_name,k,time\n")
             entries.sortBy(_.name).foreach { case PerfRun(testName, time) =>
               bw.write(f"$testName,$k,${String.format(java.util.Locale.US, "%.4f", time)}\n")
             }
@@ -72,8 +74,8 @@ package object formatting {
         case PerformanceTestResult(entries, k) =>
           (outputDir / "perf_results.md").bufferedWriter.apply { fos =>
             fos.write("# Statistics\n\n")
-            fos.write("\n# Test Outcomes \n\n")
             fos.write(f"Max call depth (k): $k  \n")
+            fos.write("\n# Test Outcomes \n\n")
             fos.write("|Test Name|Outcome|\n")
             fos.write("|---|---|\n")
             entries.sortBy(_.name).foreach { case PerfRun(testName, time) =>
