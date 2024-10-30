@@ -23,22 +23,9 @@ trait BenchmarkRunner(protected val datasetDir: File) {
 
   val benchmarkName: String
 
-  protected var currIter: Int      = 0
-  private var times: Array[Double] = uninitialized
-
-  def timeSeconds: List[Double] = {
-    for { i <- times.indices } times(i) /= 1_000_000_000.0
-    times.toList
-  }
-
   /** Records the wall clock time taken for the given function to execute.
     */
-  def recordTime[T](f: () => T): T = {
-    val start  = System.nanoTime()
-    val result = f()
-    times(currIter) += System.nanoTime() - start
-    result
-  }
+  def recordTime[T](f: () => T): T
 
   /** Create and setup the benchmark if necessary.
     *
@@ -47,43 +34,9 @@ trait BenchmarkRunner(protected val datasetDir: File) {
     */
   protected def initialize(): Try[File]
 
-  /** The findings for the given test.
-    * @return
-    *   a list of findings, if any.
-    */
-  protected def findings(testName: String): List[FindingInfo]
+  def run(iterations: Int): BaseResult
 
-  /** Compares the test expectations against the actual findings.
-    * @param testName
-    *   the test name, from where the expected result can be retrieved.
-    * @param flowExists
-    *   the expected outcome for the test.
-    */
-  protected def compare(testName: String, flowExists: Boolean): TestOutcome.Value = {
-    findings(testName) match {
-      case Nil if flowExists => TestOutcome.FN
-      case Nil               => TestOutcome.TN
-      case _ if flowExists   => TestOutcome.TP
-      case _                 => TestOutcome.FP
-    }
-  }
-
-  /** The main benchmark runner entrypoint
-    */
-  def run(iterations: Int): Result = {
-    times = Array.ofDim(iterations)
-    var result: Option[Result] = None
-    for {
-      _ <- 0 until iterations
-    } {
-      val iterResult = runIteration
-      if result.isEmpty then result = Some(iterResult)
-      currIter += 1
-    }
-    result.getOrElse(Result()).copy(times = timeSeconds)
-  }
-
-  protected def runIteration: Result
+  protected def runIteration: BaseResult
 
 }
 
@@ -103,5 +56,3 @@ trait BenchmarkSourcesAndSinks {
 }
 
 class DefaultBenchmarkSourcesAndSinks extends BenchmarkSourcesAndSinks
-
-case class FindingInfo()

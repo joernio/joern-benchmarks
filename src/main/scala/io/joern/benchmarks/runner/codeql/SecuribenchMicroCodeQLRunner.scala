@@ -21,12 +21,12 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File)
       .map(_ => FindingInfo())
   }
 
-  override def runIteration: Domain.Result = {
+  override def runIteration: Domain.BaseResult = {
     val rules = getRules("SecuribenchMicro").toList
     runScan(benchmarkBaseDir / "src", "java", rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-        Domain.Result()
+        Domain.TaintAnalysisResult()
       case Success(codeQlResults) =>
         setResults(codeQlResults)
         val testResults = getExpectedTestOutcomes
@@ -35,7 +35,7 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File)
           }
           .toList
           .sortBy(_.testName)
-        Domain.Result(testResults)
+        Domain.TaintAnalysisResult(testResults)
     }
   }
 

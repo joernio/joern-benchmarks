@@ -12,8 +12,8 @@ import scala.util.Try
 trait CpgCreator {
 
   val frontend: String
+  val maxCallDepth: Int
   protected val disableSemantics: Boolean
-  protected val maxCallDepth: Int
 
   protected implicit lazy val semantics: Semantics =
     if disableSemantics then FullNameSemantics.fromList(Nil)

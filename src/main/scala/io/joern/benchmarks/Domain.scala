@@ -6,8 +6,10 @@ import scala.annotation.targetName
 
 object Domain {
 
-  implicit val resultRw: ReadWriter[Result] =
-    readwriter[ujson.Value].bimap[Result](
+  sealed trait BaseResult
+
+  implicit val resultRw: ReadWriter[TaintAnalysisResult] =
+    readwriter[ujson.Value].bimap[TaintAnalysisResult](
       x =>
         ujson.Obj(
           "entries"       -> write[List[TestEntry]](x.entries),
@@ -17,12 +19,21 @@ object Domain {
           "trueNegative"  -> x.tn,
           "falseNegative" -> x.fp
         ),
-      json => Result(read[List[TestEntry]](json("entries")))
+      json => TaintAnalysisResult(read[List[TestEntry]](json("entries")))
     )
+
+  case class PerformanceTestResult(entries: List[PerfRun] = Nil, k: Int) extends BaseResult derives ReadWriter {
+    @targetName("appendAll")
+    def ++(o: PerformanceTestResult): PerformanceTestResult = {
+      copy(entries ++ o.entries)
+    }
+  }
+
+  case class PerfRun(name: String, time: Double) derives ReadWriter
 
   /** The result of a benchmark.
     */
-  case class Result(entries: List[TestEntry] = Nil, times: List[Double] = Nil) {
+  case class TaintAnalysisResult(entries: List[TestEntry] = Nil, times: List[Double] = Nil) extends BaseResult {
 
     /** @return
       *   When a benchmark tests for false/true positives/negatives, this will be the <a
@@ -72,7 +83,7 @@ object Domain {
     }
 
     @targetName("appendAll")
-    def ++(o: Result): Result = {
+    def ++(o: TaintAnalysisResult): TaintAnalysisResult = {
       copy(entries ++ o.entries)
     }
 

@@ -2,7 +2,7 @@ package io.joern.benchmarks.runner.semgrep
 
 import better.files.File
 import io.joern.benchmarks.Domain
-import io.joern.benchmarks.Domain.{Result, TestEntry}
+import io.joern.benchmarks.Domain.{TaintAnalysisResult, TestEntry}
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroRunner}
 import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 
@@ -23,12 +23,12 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
       .toList
   }
 
-  override def runIteration: Domain.Result = {
+  override def runIteration: Domain.BaseResult = {
     val rules = getRules("SecuribenchMicroRules")
     runScan(benchmarkBaseDir, Seq.empty, rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
-        Domain.Result()
+        Domain.TaintAnalysisResult()
       case Success(semgrepResults) =>
         setResults(semgrepResults)
         val expectedTestOutcomes = getExpectedTestOutcomes
@@ -38,7 +38,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
           }
           .toList
           .sortBy(_.testName)
-        Domain.Result(testResults)
+        Domain.TaintAnalysisResult(testResults)
     }
   }
 

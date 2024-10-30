@@ -20,17 +20,17 @@ class IchnaeaSemgrepRunner(datasetDir: File)
       .toList
   }
 
-  override def runIteration: Result = {
+  override def runIteration: BaseResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runIchnaea()
     }
   }
 
-  private def runIchnaea(): Result = {
+  private def runIchnaea(): BaseResult = {
     val outcomes = getExpectedTestOutcomes
     val rules    = getRules("IchnaeaRules")
     packageNames
@@ -39,13 +39,13 @@ class IchnaeaSemgrepRunner(datasetDir: File)
         runScan(inputDir, Seq.empty, rules) match {
           case Failure(exception) =>
             logger.error(s"Error encountered while running `semgrep` on $benchmarkName/$packageName", exception)
-            Result()
+            TaintAnalysisResult()
           case Success(semgrepResults) =>
             setResults(semgrepResults)
-            Result(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
+            TaintAnalysisResult(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
         }
       }
-      .foldLeft(Result())(_ ++ _)
+      .foldLeft(TaintAnalysisResult())(_ ++ _)
   }
 
 }

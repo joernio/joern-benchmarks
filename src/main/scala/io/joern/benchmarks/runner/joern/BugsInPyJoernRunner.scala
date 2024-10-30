@@ -12,44 +12,27 @@ import io.shiftleft.codepropertygraph.generated.{Cpg, Operators}
 import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.immutable.List
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try, Using}
 
 class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
-    extends BugsInPyRunner(datasetDir, cpgCreator.frontend)
-    with CpgBenchmarkRunner {
+    extends BugsInPyRunner(datasetDir, cpgCreator.frontend, cpgCreator.maxCallDepth) {
 
-  override def findings(testName: String): List[FindingInfo] = {
-    cpg.findings.map(mapToFindingInfo).l
-  }
-
-  override def runIteration: Result = {
-    initialize() match {
-      case Failure(exception) =>
-        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
-      case Success(benchmarkDir) =>
-        runBugsInPy()
-    }
-  }
-
-  private def runBugsInPy(): Result = recordTime(() => {
-    val outcomes = getExpectedTestOutcomes
+  override def runIteration: BaseResult = {
+    val entries = mutable.ArraySeq.empty[PerfRun]
     packageNames
       .map { packageName =>
         val inputDir = benchmarkBaseDir / packageName
-        cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg)) match {
+        recordTime(() => cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg))) match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-            Result()
+            PerfRun(packageName, -1L)
           case Success(cpg) =>
-            Using.resource(cpg) { cpg =>
-              setCpg(cpg)
-              Result(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
-            }
+            PerfRun(packageName, getTimeSeconds)
         }
       }
-      .foldLeft(Result())(_ ++ _)
-  })
+    PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)
+  }
 
   class BugsInPySourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 

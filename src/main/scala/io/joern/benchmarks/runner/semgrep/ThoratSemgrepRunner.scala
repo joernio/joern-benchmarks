@@ -23,23 +23,23 @@ class ThoratSemgrepRunner(datasetDir: File)
       .toList
   }
 
-  override def runIteration: Result = {
+  override def runIteration: TaintAnalysisResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runThorat()
     }
   }
 
-  private def runThorat(): Result = {
+  private def runThorat(): TaintAnalysisResult = {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val rules                = getRules("ThoratRules")
     runScan(benchmarkBaseDir / "tests", Seq("--include=*.py"), rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
-        Domain.Result()
+        Domain.TaintAnalysisResult()
       case Success(semgrepResults) =>
         setResults(semgrepResults)
         val testResults = expectedTestOutcomes
@@ -48,7 +48,7 @@ class ThoratSemgrepRunner(datasetDir: File)
           }
           .toList
           .sortBy(_.testName)
-        Domain.Result(testResults)
+        Domain.TaintAnalysisResult(testResults)
     }
   }
 

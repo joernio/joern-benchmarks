@@ -63,7 +63,7 @@ class JavaSrcCpgCreator(override val disableSemantics: Boolean, override val max
 
 }
 
-class JVMBytecodeCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+class JVMBytecodeCpgCreator(override val disableSemantics: Boolean, val maxCallDepth: Int)
     extends JavaCpgCreator[Jimple2Cpg] {
 
   override val frontend: String = Languages.JAVA

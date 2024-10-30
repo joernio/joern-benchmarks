@@ -8,8 +8,9 @@ import upickle.default.*
 import java.net.{URI, URL}
 import scala.util.Try
 
-abstract class Defects4jRunner(datasetDir: File, creatorLabel: String)
+abstract class Defects4jRunner(datasetDir: File, creatorLabel: String, k: Int)
     extends BenchmarkRunner(datasetDir)
+    with PerformanceTestRunner(k)
     with MultiFileDownloader {
 
   private val packageName = "defects4j"
@@ -44,7 +45,5 @@ abstract class Defects4jRunner(datasetDir: File, creatorLabel: String)
   override protected val benchmarkBaseDir: File   = datasetDir / benchmarkDirName
 
   override def initialize(): Try[File] = downloadBenchmarkAndUnarchive(CompressionTypes.ZIP)
-
-  protected def getExpectedTestOutcomes: Map[String, Boolean] = packageNames.map(x => x -> false).toMap
 
 }

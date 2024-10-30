@@ -27,7 +27,7 @@ class Benchmark(config: BenchmarkConfig) {
       val benchmarkName   = benchmarkRunner.benchmarkName
       logger.info(s"Running ${config.benchmark} using ${config.frontend}")
       benchmarkRunner.run(config.iterations) match {
-        case Result(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
+        case TaintAnalysisResult(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
           val targetOutputFile =
             config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)

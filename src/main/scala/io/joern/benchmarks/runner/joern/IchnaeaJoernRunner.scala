@@ -23,17 +23,17 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     cpg.findings.map(mapToFindingInfo).l
   }
 
-  override def runIteration: Result = {
+  override def runIteration: BaseResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runIchnaea()
     }
   }
 
-  private def runIchnaea(): Result = recordTime(() => {
+  private def runIchnaea(): BaseResult = recordTime(() => {
     val outcomes = getExpectedTestOutcomes
     packageNames
       .map { packageName =>
@@ -41,15 +41,15 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
         cpgCreator.createCpg(inputDir, cpg => IchnaeaSourcesAndSinks(cpg)) match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-            Result()
+            TaintAnalysisResult()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
               setCpg(cpg)
-              Result(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
+              TaintAnalysisResult(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
             }
         }
       }
-      .foldLeft(Result())(_ ++ _)
+      .foldLeft(TaintAnalysisResult())(_ ++ _)
   })
 
   class IchnaeaSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {

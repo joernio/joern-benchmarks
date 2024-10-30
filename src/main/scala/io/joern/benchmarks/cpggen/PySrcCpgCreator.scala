@@ -66,7 +66,7 @@ sealed trait PythonCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
 }
 
-class PySrcCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
+class PySrcCpgCreator(override val disableSemantics: Boolean, val maxCallDepth: Int)
     extends PythonCpgCreator[PySrc2Cpg] {
 
   override val frontend: String = Languages.PYTHONSRC

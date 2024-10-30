@@ -11,6 +11,7 @@ import scala.util.Try
 
 abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     extends BenchmarkRunner(datasetDir)
+    with TaintAnalysisRunner
     with MultiFileDownloader {
 
   private val logger = LoggerFactory.getLogger(getClass)

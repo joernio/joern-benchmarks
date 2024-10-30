@@ -25,17 +25,17 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
       .l
   }
 
-  override def runIteration: Result = {
+  override def runIteration: BaseResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runSecuribenchMicro()
     }
   }
 
-  private def runSecuribenchMicro(): Result = recordTime(() => {
+  private def runSecuribenchMicro(): BaseResult = recordTime(() => {
     val inputDir = cpgCreator match {
       case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
       case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
@@ -43,7 +43,7 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
     cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
       case Failure(exception) =>
         logger.error(s"Unable to generate CPG for $benchmarkName", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(cpg) =>
         Using.resource(cpg) { cpg =>
           setCpg(cpg)
@@ -54,7 +54,7 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
             }
             .sortBy(_.testName)
             .l
-          Result(testResults)
+          TaintAnalysisResult(testResults)
         }
     }
   })

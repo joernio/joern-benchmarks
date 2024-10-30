@@ -2,7 +2,7 @@ package io.joern.benchmarks.runner.codeql
 
 import better.files.File
 import io.joern.benchmarks.Domain
-import io.joern.benchmarks.Domain.{Result, TestEntry}
+import io.joern.benchmarks.Domain.{BaseResult, TaintAnalysisResult, TestEntry}
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLSimpleResult
 import io.joern.benchmarks.runner.{FindingInfo, ThoratPythonRunner}
 
@@ -21,23 +21,23 @@ class ThoratCodeQLRunner(datasetDir: File)
       .map(_ => FindingInfo())
   }
 
-  override def runIteration: Result = {
+  override def runIteration: BaseResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runThorat()
     }
   }
 
-  private def runThorat(): Result = {
+  private def runThorat(): BaseResult = {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val rules                = getRules("Thorat").toList
     runScan(benchmarkBaseDir / "tests", "python", rules) match {
       case Failure(exception) =>
         logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-        Domain.Result()
+        Domain.TaintAnalysisResult()
       case Success(codeQlResults) =>
         setResults(codeQlResults)
         val testResults = expectedTestOutcomes
@@ -46,7 +46,7 @@ class ThoratCodeQLRunner(datasetDir: File)
           }
           .toList
           .sortBy(_.testName)
-        Domain.Result(testResults)
+        Domain.TaintAnalysisResult(testResults)
     }
   }
 }

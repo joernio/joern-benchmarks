@@ -25,17 +25,17 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
       .l
   }
 
-  override def runIteration: Result = {
+  override def runIteration: BaseResult = {
     initialize() match {
       case Failure(exception) =>
         logger.error(s"Unable to initialize benchmark '$getClass'", exception)
-        Result()
+        TaintAnalysisResult()
       case Success(benchmarkDir) =>
         runThorat()
     }
   }
 
-  private def runThorat(): Result = recordTime(() => {
+  private def runThorat(): BaseResult = recordTime(() => {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val result = (benchmarkBaseDir / "tests").list
       .filter(_.isDirectory)
@@ -43,7 +43,7 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
         cpgCreator.createCpg(testDir, cpg => ThoratSourcesAndSinks(cpg)) match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
-            Result()
+            TaintAnalysisResult()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
               setCpg(cpg)
@@ -53,11 +53,11 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
                 case (testFullName, outcome) if testFullName.startsWith(testName) =>
                   TestEntry(testFullName, compare(testFullName, outcome))
               }.toList
-              Result(results)
+              TaintAnalysisResult(results)
             }
         }
       }
-      .foldLeft(Result())(_ ++ _)
+      .foldLeft(TaintAnalysisResult())(_ ++ _)
     val leftoverResults =
       expectedTestOutcomes
         .filter { case (name, outcome) => !result.entries.exists(x => name.startsWith(x.testName)) }
