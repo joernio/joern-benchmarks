@@ -20,7 +20,10 @@ A benchmarking suite for Joern
                            The dataset directory where benchmarks will be initialized and executed. Default is `./workspace`.
   -o, --output <value>     The output directory to write results to. Default is `./results`.
   -f, --format <value>     The output format to write results as. Default is MD. Available [JSON,CSV,MD]
-  --disable-semantics      Disables the user-defined semantics for Joern data-flows. Has no effect on non-Joern frontends.
+  -k, --max-call-depth <value>
+                           The max call depth `k` for the data-flow engine. Has no effect on non-Joern frontends. Default is 5.
+  -i, --iterations <value>
+                           The number of iterations for a given benchmark. Default is 1.
 ```
 
 Example of testing for various values of `k`:

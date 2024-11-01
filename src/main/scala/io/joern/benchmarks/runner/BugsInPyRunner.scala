@@ -18,7 +18,7 @@ abstract class BugsInPyRunner(datasetDir: File, creatorLabel: String, k: Int)
   override val benchmarkName = s"BugsInPy $creatorLabel"
 
   protected val packageNames: List[String] = List(
-    "ansible",
+//    "ansible", // This program is way too large
     "cookiecutter",
     "PySnooper",
     "spacy",

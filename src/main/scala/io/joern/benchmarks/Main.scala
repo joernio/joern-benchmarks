@@ -67,7 +67,7 @@ object Main {
       .text(s"Disables the user-defined semantics for Joern data-flows. Has no effect on non-Joern frontends.")
       .action((x, c) => c.copy(disableSemantics = true))
     opt[Int]('k', "max-call-depth")
-      .text("The max call depth `k` for the data-flow engine. Has no effect on non-Joern frontends. Default is 4.")
+      .text("The max call depth `k` for the data-flow engine. Has no effect on non-Joern frontends. Default is 5.")
       .validate {
         case x if x < 0 => failure("Max call depth must be greater than or equal to 0.")
         case _          => success

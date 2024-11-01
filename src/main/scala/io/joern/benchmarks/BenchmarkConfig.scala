@@ -9,7 +9,7 @@ case class BenchmarkConfig(
   outputDir: File = File("results"),
   outputFormat: OutputFormat.Value = OutputFormat.MD,
   disableSemantics: Boolean = false,
-  maxCallDepth: Int = 4,
+  maxCallDepth: Int = 5,
   iterations: Int = 1
 )
 
