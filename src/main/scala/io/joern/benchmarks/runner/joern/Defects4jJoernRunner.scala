@@ -23,21 +23,22 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
       recordTime(() => cpgCreator.createCpg(inputDir, cpg => Defects4jSourcesAndSinks(cpg))) match {
         case Failure(exception) =>
           logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-        case Success(_) =>
+        case Success(cpg) =>
+          if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
           entries.addOne(PerfRun(packageName, getTimeSeconds))
       }
     }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)
   }
 
-  class Defects4jSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
+  private class Defects4jSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
     override def sources: Iterator[CfgNode] = {
       val builtins = cpg.call.methodFullName(
         "java\\.lang\\.System.*get(env|Property).*",
         "java\\.lang\\.Runtime.*exec.*",
         "java\\.io\\.BufferedReader.*readLine.*",
-        "java\\.io\\.InputStream.*read.*",
+        "java\\.io\\.(Input|File|Object|ByteArray)Stream.*read.*",
         "java.\\nio\\.file\\.Files.*readAllBytes.*",
         "java\\.util\\.Scanner.*nextLine.*",
         "java\\.net\\.Socket.*getInputStream.*"
@@ -58,7 +59,22 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         "org\\.apache\\.commons\\.io\\.FileUtils.*readFileToString.*"
       )
 
-      builtins ++ servletsAndWeb ++ jdbc ++ misc
+      val apacheCommons =
+        cpg.typeDecl
+          .nameExact("Transformer", "Closure")
+          .derivedTypeDeclTransitive
+          .method
+          .nameExact("<init>")
+          .parameter
+
+      val apacheCsv = cpg.typeDecl
+        .nameExact("CSVPrinter", "CSVFormat", "CSVRecord")
+        .method
+        .nameExact("print", "printRecord", "withHeader", "get", "isMapped")
+        .parameter
+        .index(1)
+
+      builtins ++ servletsAndWeb ++ jdbc ++ misc ++ apacheCommons ++ apacheCsv
     }
 
     override def sinks: Iterator[CfgNode] = {
@@ -85,6 +101,8 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         "java\\.sql\\.Statement.*executeQuery.*"
       )
 
+      val jdbcMisusePreparedStmt = cpg.call.methodFullName("java\\.sql\\.Connection.*prepareStatement.*").argument(1)
+
       val misc = cpg.call.methodFullName(
         "org\\.apache\\.commons\\.io\\.FileUtils.*writeStringToFile.*",
         "com\\.fasterxml\\.jackson\\.databind\\.ObjectMapper.*writeValue.*",
@@ -92,8 +110,22 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
         "org\\.hibernate\\.Session.*createSQLQuery.*"
       )
 
+      val gson = (cpg.typeDecl.nameExact("Gson").method.nameExact("fromJson") ++ cpg.typeDecl
+        .nameExact("JsonDeserializer")
+        .derivedTypeDeclTransitive
+        .method
+        .nameExact("deserialize")).parameter.index(1).argument
+
+      val apacheCsv = cpg.typeDecl
+        .nameExact("CSVPrinter", "CSVFormat", "CSVRecord")
+        .method
+        .nameExact("print", "printRecord", "withHeader", "get", "isMapped")
+        .parameter
+        .index(1)
+        .argument
+
       (builtins ++ servletsAndWeb ++ jdbc ++ misc).argument
-        .argumentIndexGte(1) ++ cpg.call.methodFullName("java\\.sql\\.Connection.*prepareStatement.*").argument(1)
+        .argumentIndexGte(1) ++ jdbcMisusePreparedStmt ++ gson // ++ apacheCsv
     }
 
   }

@@ -24,13 +24,14 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
         case Failure(exception) =>
           logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
         case Success(cpg) =>
+          if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
           entries.addOne(PerfRun(packageName, getTimeSeconds))
       }
     }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)
   }
 
-  class BugsInPySourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
+  private class BugsInPySourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
     override def sources: Iterator[CfgNode] = {
       val builtins = cpg.call.methodFullName(
