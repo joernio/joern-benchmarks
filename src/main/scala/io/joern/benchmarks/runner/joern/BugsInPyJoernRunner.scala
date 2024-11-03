@@ -48,7 +48,7 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
       val miscLibs = cpg.call.methodFullName(
         "requests\\..*(get|post|request)\\..*",
         "paramiko\\..*SSHClient\\..*exec_command.*",
-        "(pymysql|psycopg2)\\.*(connect|cursor|execute).*"
+        "(pymysql|psycopg2|sqlalchemy)\\.*(connect|cursor|execute).*"
       )
 
       builtins ++ miscLibs
@@ -60,7 +60,7 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
         "subprocess\\..*(Popen|run|call).*",
         "__builtins__\\..*(exec|eval|open|print).*",
         "shutil\\..*(copyfile|move).*",
-        "pickle\\..*dumps?\\..*",
+        "(json|pickle)\\..*dumps?\\..*",
         "sqlite3\\..*execute.*",
         "xml\\..*etree\\..*ElementTree\\..*write.*",
         "logging\\..*Logger\\..*(info|warn|error).*"
