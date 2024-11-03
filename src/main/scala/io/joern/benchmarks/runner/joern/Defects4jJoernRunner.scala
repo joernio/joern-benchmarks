@@ -45,9 +45,7 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
       )
 
       val servletsAndWeb = cpg.call.methodFullName(
-        "javax\\.servlet\\.http\\.HttpServletRequest.*(getParameter|getQueryString|getHeader|getInputStream|getCookies).*",
-        "org\\.springframework\\.web\\.bind\\.annotation\\.(RequestParam|RequestBody).*",
-        "org\\.springframework\\.web\\.context\\.request\\.RequestAttributes.*getAttribute.*"
+        "javax\\.servlet\\.http\\.HttpServletRequest.*get(Cookies|Header|InputStream|Parameter|QueryString).*"
       )
 
       val jdbc =
@@ -88,11 +86,7 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
 
       val servletsAndWeb = cpg.call.methodFullName(
         "javax\\.servlet\\.http\\.HttpServletResponse.*addHeader.*",
-        "javax\\.servlet\\.RequestDispatcher.*(forward|include).*",
-        "org\\.springframework\\.jdbc\\.core\\.JdbcTemplate.*execute.*",
-        "org\\.springframework\\.web\\.servlet\\.view\\.JstlView.*render.*",
-        "org\\.springframework\\.http\\.ResponseEntity.*",
-        "org\\.springframework\\.web\\.servlet\\.ModelAndView.*"
+        "javax\\.servlet\\.RequestDispatcher.*(forward|include).*"
       )
 
       val jdbc = cpg.call.methodFullName(
@@ -106,8 +100,7 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
       val misc = cpg.call.methodFullName(
         "org\\.apache\\.commons\\.io\\.FileUtils.*writeStringToFile.*",
         "com\\.fasterxml\\.jackson\\.databind\\.ObjectMapper.*writeValue.*",
-        "org\\.apache\\.velocity\\.Template.*merge.*",
-        "org\\.hibernate\\.Session.*createSQLQuery.*"
+        "org\\.apache\\.velocity\\.Template.*merge.*"
       )
 
       val gson = (cpg.typeDecl.nameExact("Gson").method.nameExact("fromJson") ++ cpg.typeDecl

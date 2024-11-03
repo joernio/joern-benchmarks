@@ -40,15 +40,9 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
         "sys\\..*(argv|stdin\\.read).*",
         "socket\\..*\\.recv.*",
         "http\\..*server\\..*BaseHTTPRequestHandler.*",
-        "email\\..*parser\\..*Parser.*",
         "(json|pickle)\\..*loads?.*",
         "csv\\..*reader.*",
         "xml\\..*etree\\..*ElementTree\\..*parse.*"
-      )
-
-      val webFrameworks = cpg.call.methodFullName(
-        "flask\\..*(request|response)\\..(args|form|json).*",
-        "django\\..*http\\..*Http(Request|Response)\\..*(GET|POST|body).*"
       )
 
       val miscLibs = cpg.call.methodFullName(
@@ -57,7 +51,7 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
         "(pymysql|psycopg2)\\.*(connect|cursor|execute).*"
       )
 
-      builtins ++ webFrameworks ++ miscLibs
+      builtins ++ miscLibs
     }
 
     override def sinks: Iterator[CfgNode] = {
@@ -72,21 +66,13 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
         "logging\\..*Logger\\..*(info|warn|error).*"
       )
 
-      val webFrameworks = cpg.call.methodFullName(
-        "flask\\..*(Response|render\\_template).*",
-        "django\\..*http\\..*HttpResponse.*",
-        "django\\..*shortcuts\\..*render.*",
-        "django\\..*db\\..*connection\\..*execute.*",
-        "jinja2\\..*template\\..*render.*"
-      )
-
       val miscLibs = cpg.call.methodFullName(
         "requests\\..*(put|post|request)\\..*",
         "paramiko\\..*SSHClient\\..*exec_command.*",
         "(pymysql|psycopg2|sqlalchemy)\\.*(connect|cursor|execute).*"
       )
 
-      (builtins ++ webFrameworks ++ miscLibs).argument.argumentIndexGte(1)
+      (builtins ++ miscLibs).argument.argumentIndexGte(1)
     }
 
   }
