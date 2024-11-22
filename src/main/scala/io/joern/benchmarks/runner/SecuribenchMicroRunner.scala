@@ -67,8 +67,12 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
         logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
 
-    sinkLocations.put("Aliasing1:46", false) // This is incorrectly tagged as vulnerable in the dataset
-    sinkLocations.put("Basic24:46", true)    // This does not have a comment but the vulnerability is present
+    sinkLocations.put("Aliasing3:46", false)      // This is incorrectly tagged as vulnerable in the dataset
+    sinkLocations.put("Basic24:46", true)         // This does not have a comment but the vulnerability is present
+    sinkLocations.put("Collections8:51", false)   //  This is incorrectly tagged as vulnerable in the dataset
+    sinkLocations.put("Collections13:52", false)  //  This is incorrectly tagged as vulnerable instead of next line
+    sinkLocations.put("Collections13:54", true)   //  This is incorrectly tagged ok
+    sinkLocations.put("Datastructures1:58", true) //  This is incorrectly tagged ok
 
     sinkLocations.toMap
   }
