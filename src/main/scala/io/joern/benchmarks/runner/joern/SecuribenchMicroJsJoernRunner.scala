@@ -57,19 +57,20 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
   })
 
   private class SecuribenchMicroJsSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
-    override def sources: Iterator[CfgNode] =
-      cpg.parameter.and(_.name("req"), _.method.name("handler"))
+    override def sources: Iterator[CfgNode] = {
+      cpg.assignment.where(_.source.fieldAccess.argument(1).isIdentifier.nameExact("req")).target
+    }
 
     override def sinks: Iterator[CfgNode] = {
-      val sinkCalls = cpg.call
+      val resCalls = cpg.call
         .nameExact("send", "write", "redirect")
-        .where(_.receiver.fieldAccess.argument(1).isIdentifier.name("resp?", "writer")) ++
-        cpg.call
-          .nameExact("createReadStream", "writeFileSync", "createWriteStream", "open")
-          .where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("fs")) ++
-        cpg.call.nameExact("query").where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("db"))
+        .where(_.receiver.fieldAccess.argument(1).isIdentifier.name("resp?", "writer"))
+      val fsCalls = cpg.call
+        .nameExact("createReadStream", "writeFileSync", "createWriteStream", "open")
+        .where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("fs"))
+      val dbCalls = cpg.call.nameExact("query").where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("db"))
 
-      sinkCalls.argument(1)
+      (resCalls ++ fsCalls ++ dbCalls).argument(1)
     }
   }
 
