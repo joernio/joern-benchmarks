@@ -2,14 +2,13 @@ package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
+import io.joern.benchmarks.cpggen.*
 import io.joern.benchmarks.formatting.formatterConstructors
 import io.joern.benchmarks.runner.BenchmarkRunner
-import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
+import io.joern.benchmarks.runner.codeql.*
 import io.joern.benchmarks.runner.joern.*
-import io.joern.benchmarks.runner.semgrep.{IchnaeaSemgrepRunner, SecuribenchMicroSemgrepRunner, ThoratSemgrepRunner}
+import io.joern.benchmarks.runner.semgrep.*
 import org.slf4j.LoggerFactory
-import upickle.default.*
 
 /** The main benchmarking process.
   */
@@ -60,6 +59,10 @@ object Benchmark {
       x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.JSSRC,
+      x => new SecuribenchMicroJsJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+    ),
+    (
       AvailableBenchmarks.ICHNAEA -> AvailableFrontends.JSSRC,
       x => new IchnaeaJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
@@ -80,12 +83,20 @@ object Benchmark {
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.SEMGREP,
       x => new SecuribenchMicroSemgrepRunner(x.datasetDir)
     ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.SEMGREP,
+      x => new SecuribenchMicroJsSemgrepRunner(x.datasetDir)
+    ),
     (AvailableBenchmarks.THORAT  -> AvailableFrontends.SEMGREP, x => new ThoratSemgrepRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
     // CODEQL
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.CODEQL,
       x => new SecuribenchMicroCodeQLRunner(x.datasetDir)
+    ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.CODEQL,
+      x => new SecuribenchMicroJsCodeQLRunner(x.datasetDir)
     ),
     (AvailableBenchmarks.THORAT  -> AvailableFrontends.CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))

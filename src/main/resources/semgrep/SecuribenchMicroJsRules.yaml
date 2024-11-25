@@ -1,0 +1,25 @@
+rules:
+  - id: sbjs-taint-rules-1
+    languages: [javascript]
+    severity: ERROR
+    message: "Attacker-controlled getter to some sink"
+    options:
+      interfile: true
+    mode: taint
+    pattern-sources:
+      - patterns:
+        - pattern: const handler = ($REQ, res) => { ... }
+        - focus-metavariable: $REQ
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - focus-metavariable: $SINK
+          - pattern-either:
+            - pattern: redirect($SINK, ...)
+            - pattern: send($SINK, ...)
+            - pattern: write($SINK, ...)
+            - pattern: createReadStream($SINK, ...)
+            - pattern: writeFileSync($SINK, ...)
+            - pattern: createWriteStream($SINK, ...)
+            - pattern: open($SINK, ...)
+            - pattern: query($SINK, ...)
