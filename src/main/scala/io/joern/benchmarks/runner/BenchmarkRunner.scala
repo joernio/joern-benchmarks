@@ -8,8 +8,6 @@ import io.shiftleft.semanticcpg.language.{ICallResolver, NoResolve}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.lang
-import scala.collection.mutable
-import scala.compiletime.uninitialized
 import scala.util.Try
 
 /** A process that runs a benchmark.
@@ -19,7 +17,7 @@ trait BenchmarkRunner(protected val datasetDir: File) {
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val baseDatasetsUrl: String   = "https://github.com/joernio/joern-benchmark-datasets/releases/download"
-  val benchmarksVersion: String = "v0.10.0"
+  val benchmarksVersion: String = "v0.12.0"
 
   val benchmarkName: String
 

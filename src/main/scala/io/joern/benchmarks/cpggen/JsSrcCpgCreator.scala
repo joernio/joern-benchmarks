@@ -1,6 +1,7 @@
 package io.joern.benchmarks.cpggen
 
 import better.files.File
+import io.joern.benchmarks.*
 import io.joern.benchmarks.passes.{FindingsPass, JavaScriptTaggingPass}
 import io.joern.benchmarks.runner.{BenchmarkSourcesAndSinks, DefaultBenchmarkSourcesAndSinks}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}

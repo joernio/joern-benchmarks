@@ -9,7 +9,6 @@ import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroC
 import io.joern.benchmarks.runner.joern.*
 import io.joern.benchmarks.runner.semgrep.{IchnaeaSemgrepRunner, SecuribenchMicroSemgrepRunner, ThoratSemgrepRunner}
 import org.slf4j.LoggerFactory
-import upickle.default.*
 
 /** The main benchmarking process.
   */
@@ -58,6 +57,10 @@ object Benchmark {
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVA,
       x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
+    ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.JSSRC,
+      x => new SecuribenchMicroJsJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
     ),
     (
       AvailableBenchmarks.ICHNAEA -> AvailableFrontends.JSSRC,
