@@ -16,7 +16,7 @@ trait CpgCreator {
   protected val disableSemantics: Boolean
 
   protected implicit lazy val semantics: Semantics =
-    if disableSemantics then FullNameSemantics.fromList(Nil)
+    if disableSemantics then FullNameSemantics.fromList(DefaultSemantics.operatorFlows)
     else FullNameSemantics.fromList(DefaultSemantics.operatorFlows ++ extraSemantics)
   private val engineConfig: EngineConfig                   = EngineConfig(maxCallDepth = maxCallDepth)
   protected implicit lazy val engineContext: EngineContext = EngineContext(semantics, engineConfig)
