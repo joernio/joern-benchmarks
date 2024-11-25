@@ -8,18 +8,32 @@ rules:
     mode: taint
     pattern-sources:
       - patterns:
-        - pattern: const handler = ($REQ, res) => { ... }
+        - pattern-either:
+            - pattern: const handler = ($REQ, ...) => { ... }
+            - pattern-inside: |
+                const handler = ($REQ, ...) => {
+                  ...
+                  $NAME = $REQ.query[...];
+                  ...
+                }
+            - pattern-inside: |
+                const handler = ($REQ, ...) => {
+                  ...
+                  $NAME = $REQ.query.*;
+                  ...
+                }
         - focus-metavariable: $REQ
+        - focus-metavariable: $NAME
         by-side-effect: true
     pattern-sinks:
       - patterns:
           - focus-metavariable: $SINK
           - pattern-either:
-            - pattern: redirect($SINK, ...)
-            - pattern: send($SINK, ...)
-            - pattern: write($SINK, ...)
-            - pattern: createReadStream($SINK, ...)
-            - pattern: writeFileSync($SINK, ...)
-            - pattern: createWriteStream($SINK, ...)
-            - pattern: open($SINK, ...)
-            - pattern: query($SINK, ...)
+            - pattern: $RES.redirect($SINK, ...)
+            - pattern: $RES.send($SINK)
+            - pattern: $RES.write($SINK)
+            - pattern: $FS.createReadStream($SINK, ...)
+            - pattern: $FS.writeFileSync($SINK, ...)
+            - pattern: $FS.createWriteStream($SINK, ...)
+            - pattern: $FS.open($SINK, ...)
+            - pattern: $DB.query($SINK, ...)
