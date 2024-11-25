@@ -94,6 +94,10 @@ object Benchmark {
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.CODEQL,
       x => new SecuribenchMicroCodeQLRunner(x.datasetDir)
     ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.CODEQL,
+      x => new SecuribenchMicroJsCodeQLRunner(x.datasetDir)
+    ),
     (AvailableBenchmarks.THORAT  -> AvailableFrontends.CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))
   )
