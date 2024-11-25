@@ -2,12 +2,12 @@ package io.joern.benchmarks
 
 import io.joern.benchmarks.Benchmark.benchmarkConstructors
 import io.joern.benchmarks.Domain.*
-import io.joern.benchmarks.cpggen.{JVMBytecodeCpgCreator, JavaSrcCpgCreator, JsSrcCpgCreator, PySrcCpgCreator}
+import io.joern.benchmarks.cpggen.*
 import io.joern.benchmarks.formatting.formatterConstructors
 import io.joern.benchmarks.runner.BenchmarkRunner
-import io.joern.benchmarks.runner.codeql.{IchnaeaCodeQLRunner, SecuribenchMicroCodeQLRunner, ThoratCodeQLRunner}
+import io.joern.benchmarks.runner.codeql.*
 import io.joern.benchmarks.runner.joern.*
-import io.joern.benchmarks.runner.semgrep.{IchnaeaSemgrepRunner, SecuribenchMicroSemgrepRunner, ThoratSemgrepRunner}
+import io.joern.benchmarks.runner.semgrep.*
 import org.slf4j.LoggerFactory
 
 /** The main benchmarking process.
@@ -82,6 +82,10 @@ object Benchmark {
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.SEMGREP,
       x => new SecuribenchMicroSemgrepRunner(x.datasetDir)
+    ),
+    (
+      AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.SEMGREP,
+      x => new SecuribenchMicroJsSemgrepRunner(x.datasetDir)
     ),
     (AvailableBenchmarks.THORAT  -> AvailableFrontends.SEMGREP, x => new ThoratSemgrepRunner(x.datasetDir)),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),

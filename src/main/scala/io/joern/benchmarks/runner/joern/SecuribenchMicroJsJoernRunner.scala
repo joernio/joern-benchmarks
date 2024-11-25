@@ -36,7 +36,7 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
   }
 
   private def runSecuribenchMicro(): BaseResult = recordTime(() => {
-    val inputDir = benchmarkBaseDir / "securibench-micro.js-1.0.1" / "test-cases"
+    val inputDir = benchmarkBaseDir / "securibench-micro.js-1.0.2" / "test-cases"
     cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroJsSourcesAndSinks(cpg)) match {
       case Failure(exception) =>
         logger.error(s"Unable to generate CPG for $benchmarkName", exception)
@@ -58,7 +58,7 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
 
   private class SecuribenchMicroJsSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
     override def sources: Iterator[CfgNode] =
-      cpg.parameter.and(_.index(2), _.method.name("handler"))
+      cpg.parameter.and(_.name("req"), _.method.name("handler"))
 
     override def sinks: Iterator[CfgNode] = {
       val sinkCalls = cpg.call
@@ -67,7 +67,7 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
         cpg.call
           .nameExact("createReadStream", "writeFileSync", "createWriteStream", "open")
           .where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("fs")) ++
-        cpg.call.name("query", "execute.*").where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("db"))
+        cpg.call.nameExact("query").where(_.receiver.fieldAccess.argument(1).isIdentifier.nameExact("db"))
 
       sinkCalls.argument(1)
     }

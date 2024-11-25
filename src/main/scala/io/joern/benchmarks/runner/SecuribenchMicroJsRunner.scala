@@ -16,7 +16,7 @@ abstract class SecuribenchMicroJsRunner(datasetDir: File, creatorLabel: String)
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override val benchmarkName = s"securibench-micro.js v1.0.1 $creatorLabel"
+  override val benchmarkName = s"securibench-micro.js v1.0.2 $creatorLabel"
 
   private val packageName = "securibench-micro-js"
 
