@@ -10,7 +10,8 @@ case class BenchmarkConfig(
   outputFormat: OutputFormat.Value = OutputFormat.MD,
   disableSemantics: Boolean = false,
   maxCallDepth: Int = 5,
-  iterations: Int = 1
+  iterations: Int = 1,
+  wholeProgram: Boolean = false
 )
 
 object AvailableBenchmarks extends Enumeration {

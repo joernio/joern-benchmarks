@@ -27,7 +27,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     case None          => throw new RuntimeException("No results have been set!")
   }
 
-  private def initializeDatabase(sourceRoot: File, language: String): Try[File] = {
+  private def initializeDatabase(sourceRoot: File, language: String, autobuild: Boolean = false): Try[File] = {
     val tmpDir = File.newTemporaryDirectory("joern-benchmarks-codeql-db") deleteOnExit (swallowIOExceptions = true)
     val cmd = Seq(
       "codeql",
@@ -37,8 +37,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
       s"--source-root=${sourceRoot.pathAsString}",
       s"--language=$language",
       "--overwrite",
-      "--build-mode=none"
-    ).mkString(" ")
+      s"--build-mode=${if autobuild then "autobuild" else "none"}"
+    ).filterNot(_.isBlank).mkString(" ")
     recordTime(() => { runCmd(cmd, sourceRoot.parent.toJava).toTry }) match {
       case Failure(exception) =>
         logger.error(
@@ -58,7 +58,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     val tmpDir =
       File.newTemporaryDirectory("joern-benchmarks-codeql-query-pack") deleteOnExit (swallowIOExceptions = true)
     queryFiles.foreach(f => f.copyTo(tmpDir / f.name))
-    val qlPack = (tmpDir / "qlpack.yml")
+    (tmpDir / "qlpack.yml")
       .createFile()
       .writeText(s"""
         |name: joern-benchmark-taint
@@ -78,8 +78,13 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     }
   }
 
-  protected def runScan(inputDir: File, language: String, queryFiles: List[File]): Try[CodeQLSimpleFindings] = {
-    initializeDatabase(inputDir, language) match {
+  protected def runScan(
+    inputDir: File,
+    language: String,
+    queryFiles: List[File],
+    autobuild: Boolean = false
+  ): Try[CodeQLSimpleFindings] = {
+    initializeDatabase(inputDir, language, autobuild) match {
       case Failure(exception) => Failure(exception)
       case Success(databaseFile) =>
         installQuery(queryFiles, language) match {

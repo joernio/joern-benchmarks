@@ -12,7 +12,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
+class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?], wholeProgram: Boolean)
     extends SecuribenchMicroJsRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
@@ -36,23 +36,28 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
   }
 
   private def runSecuribenchMicro(): BaseResult = recordTime(() => {
-    val inputDir = benchmarkBaseDir / "securibench-micro.js-1.0.2" / "test-cases"
-    cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroJsSourcesAndSinks(cpg)) match {
-      case Failure(exception) =>
-        logger.error(s"Unable to generate CPG for $benchmarkName", exception)
-        TaintAnalysisResult()
-      case Success(cpg) =>
-        Using.resource(cpg) { cpg =>
-          setCpg(cpg)
-          val expectedTestOutcomes = getExpectedTestOutcomes
-          val testResults = expectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .sortBy(_.testName)
-            .l
-          TaintAnalysisResult(testResults)
-        }
+    val inputDir = benchmarkBaseDir / subDirName
+    if wholeProgram then setupWholeProgram(inputDir)
+    try {
+      cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroJsSourcesAndSinks(cpg)) match {
+        case Failure(exception) =>
+          logger.error(s"Unable to generate CPG for $benchmarkName", exception)
+          TaintAnalysisResult()
+        case Success(cpg) =>
+          Using.resource(cpg) { cpg =>
+            setCpg(cpg)
+            val expectedTestOutcomes = getExpectedTestOutcomes
+            val testResults = expectedTestOutcomes
+              .map { case (testName, outcome) =>
+                TestEntry(testName, compare(testName, outcome))
+              }
+              .sortBy(_.testName)
+              .l
+            TaintAnalysisResult(testResults)
+          }
+      }
+    } finally {
+      if wholeProgram then cleanupWholeProgram(inputDir)
     }
   })
 

@@ -52,15 +52,30 @@ object Benchmark {
     // JOERN
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVASRC,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+      x =>
+        new SecuribenchMicroJoernRunner(
+          x.datasetDir,
+          JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth),
+          x.wholeProgram
+        )
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.JAVA,
-      x => new SecuribenchMicroJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
+      x =>
+        new SecuribenchMicroJoernRunner(
+          x.datasetDir,
+          JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth),
+          x.wholeProgram
+        )
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.JSSRC,
-      x => new SecuribenchMicroJsJoernRunner(x.datasetDir, JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+      x =>
+        new SecuribenchMicroJsJoernRunner(
+          x.datasetDir,
+          JsSrcCpgCreator(x.disableSemantics, x.maxCallDepth),
+          x.wholeProgram
+        )
     ),
     (
       AvailableBenchmarks.ICHNAEA -> AvailableFrontends.JSSRC,
@@ -68,7 +83,7 @@ object Benchmark {
     ),
     (
       AvailableBenchmarks.THORAT -> AvailableFrontends.PYSRC,
-      x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth))
+      x => new ThoratJoernRunner(x.datasetDir, PySrcCpgCreator(x.disableSemantics, x.maxCallDepth), x.wholeProgram)
     ),
     (
       AvailableBenchmarks.BUGS_IN_PY -> AvailableFrontends.PYSRC,
@@ -85,20 +100,26 @@ object Benchmark {
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.SEMGREP,
-      x => new SecuribenchMicroJsSemgrepRunner(x.datasetDir)
+      x => new SecuribenchMicroJsSemgrepRunner(x.datasetDir, x.wholeProgram)
     ),
-    (AvailableBenchmarks.THORAT  -> AvailableFrontends.SEMGREP, x => new ThoratSemgrepRunner(x.datasetDir)),
+    (
+      AvailableBenchmarks.THORAT -> AvailableFrontends.SEMGREP,
+      x => new ThoratSemgrepRunner(x.datasetDir, x.wholeProgram)
+    ),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.SEMGREP, x => new IchnaeaSemgrepRunner(x.datasetDir)),
     // CODEQL
     (
       AvailableBenchmarks.SECURIBENCH_MICRO -> AvailableFrontends.CODEQL,
-      x => new SecuribenchMicroCodeQLRunner(x.datasetDir)
+      x => new SecuribenchMicroCodeQLRunner(x.datasetDir, x.wholeProgram)
     ),
     (
       AvailableBenchmarks.SECURIBENCH_MICRO_JS -> AvailableFrontends.CODEQL,
-      x => new SecuribenchMicroJsCodeQLRunner(x.datasetDir)
+      x => new SecuribenchMicroJsCodeQLRunner(x.datasetDir, x.wholeProgram)
     ),
-    (AvailableBenchmarks.THORAT  -> AvailableFrontends.CODEQL, x => new ThoratCodeQLRunner(x.datasetDir)),
+    (
+      AvailableBenchmarks.THORAT -> AvailableFrontends.CODEQL,
+      x => new ThoratCodeQLRunner(x.datasetDir, x.wholeProgram)
+    ),
     (AvailableBenchmarks.ICHNAEA -> AvailableFrontends.CODEQL, x => new IchnaeaCodeQLRunner(x.datasetDir))
   )
 

@@ -12,7 +12,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
+class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?], wholeProgram: Boolean)
     extends SecuribenchMicroRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
@@ -37,25 +37,34 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
 
   private def runSecuribenchMicro(): BaseResult = recordTime(() => {
     val inputDir = cpgCreator match {
-      case creator: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
-      case creator: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
+      case _: JVMBytecodeCpgCreator => benchmarkBaseDir / "classes"
+      case _: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
     }
-    cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
-      case Failure(exception) =>
-        logger.error(s"Unable to generate CPG for $benchmarkName", exception)
-        TaintAnalysisResult()
-      case Success(cpg) =>
-        Using.resource(cpg) { cpg =>
-          setCpg(cpg)
-          val expectedTestOutcomes = getExpectedTestOutcomes
-          val testResults = expectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .sortBy(_.testName)
-            .l
-          TaintAnalysisResult(testResults)
-        }
+    if wholeProgram then {
+      (benchmarkBaseDir / "lib").list.foreach(l => l.copyToDirectory(inputDir))
+    }
+    try {
+      cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroSourcesAndSinks(cpg)) match {
+        case Failure(exception) =>
+          logger.error(s"Unable to generate CPG for $benchmarkName", exception)
+          TaintAnalysisResult()
+        case Success(cpg) =>
+          Using.resource(cpg) { cpg =>
+            setCpg(cpg)
+            val expectedTestOutcomes = getExpectedTestOutcomes
+            val testResults = expectedTestOutcomes
+              .map { case (testName, outcome) =>
+                TestEntry(testName, compare(testName, outcome))
+              }
+              .sortBy(_.testName)
+              .l
+            TaintAnalysisResult(testResults)
+          }
+      }
+    } finally {
+      if wholeProgram then {
+        (benchmarkBaseDir / "lib").list.foreach(l => (inputDir / l.name).delete(true))
+      }
     }
   })
 

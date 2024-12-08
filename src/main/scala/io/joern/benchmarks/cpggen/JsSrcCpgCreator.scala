@@ -50,7 +50,7 @@ sealed trait JavaScriptCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreat
     sourcesAndSinks: Cpg => BenchmarkSourcesAndSinks = { _ => DefaultBenchmarkSourcesAndSinks() }
   ): Cpg = {
     new OssDataFlow(new OssDataFlowOptions()).run(new LayerCreatorContext(cpg))
-    jssrc2cpg.postProcessingPasses(cpg, XTypeRecoveryConfig()).foreach(_.createAndApply())
+    jssrc2cpg.postProcessingPasses(cpg, XTypeRecoveryConfig(2)).foreach(_.createAndApply())
     new JavaScriptTaggingPass(cpg, sourcesAndSinks(cpg)).createAndApply()
     new FindingsPass(cpg).createAndApply()
     cpg

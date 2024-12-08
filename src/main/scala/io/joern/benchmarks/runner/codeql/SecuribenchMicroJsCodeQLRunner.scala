@@ -8,7 +8,7 @@ import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroJsRunner, Securi
 
 import scala.util.{Failure, Success}
 
-class SecuribenchMicroJsCodeQLRunner(datasetDir: File)
+class SecuribenchMicroJsCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
     extends SecuribenchMicroJsRunner(datasetDir, CodeQLBenchmarkRunner.CreatorLabel)
     with CodeQLBenchmarkRunner {
 
@@ -23,20 +23,26 @@ class SecuribenchMicroJsCodeQLRunner(datasetDir: File)
   }
 
   override def runIteration: Domain.BaseResult = {
-    val rules = getRules("SecuribenchMicroJs").toList
-    runScan(benchmarkBaseDir / "securibench-micro.js-1.0.2", "javascript", rules) match {
-      case Failure(exception) =>
-        logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-        Domain.TaintAnalysisResult()
-      case Success(codeQlResults) =>
-        setResults(codeQlResults)
-        val testResults = getExpectedTestOutcomes
-          .map { case (testName, outcome) =>
-            TestEntry(testName, compare(testName, outcome))
-          }
-          .toList
-          .sortBy(_.testName)
-        Domain.TaintAnalysisResult(testResults)
+    val rules    = getRules("SecuribenchMicroJs").toList
+    val inputDir = benchmarkBaseDir / s"securibench-micro.js-$version"
+    if wholeProgram then setupWholeProgram(inputDir)
+    try {
+      runScan(inputDir, "javascript", rules) match {
+        case Failure(exception) =>
+          logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
+          Domain.TaintAnalysisResult()
+        case Success(codeQlResults) =>
+          setResults(codeQlResults)
+          val testResults = getExpectedTestOutcomes
+            .map { case (testName, outcome) =>
+              TestEntry(testName, compare(testName, outcome))
+            }
+            .toList
+            .sortBy(_.testName)
+          Domain.TaintAnalysisResult(testResults)
+      }
+    } finally {
+      if wholeProgram then cleanupWholeProgram(inputDir)
     }
   }
 
