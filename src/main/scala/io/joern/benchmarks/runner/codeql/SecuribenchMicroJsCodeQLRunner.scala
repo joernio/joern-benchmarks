@@ -2,7 +2,7 @@ package io.joern.benchmarks.runner.codeql
 
 import better.files.File
 import io.joern.benchmarks.Domain
-import io.joern.benchmarks.Domain.TestEntry
+import io.joern.benchmarks.Domain.{TaintAnalysisResult, TestEntry}
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLSimpleResult
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroJsRunner, SecuribenchMicroRunner}
 
@@ -23,27 +23,34 @@ class SecuribenchMicroJsCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
   }
 
   override def runIteration: Domain.BaseResult = {
-    val rules    = getRules("SecuribenchMicroJs").toList
-    val inputDir = benchmarkBaseDir / s"securibench-micro.js-$version"
-    if wholeProgram then setupWholeProgram(inputDir)
-    try {
-      runScan(inputDir, "javascript", rules) match {
-        case Failure(exception) =>
-          logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-          Domain.TaintAnalysisResult()
-        case Success(codeQlResults) =>
-          setResults(codeQlResults)
-          val testResults = getExpectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .toList
-            .sortBy(_.testName)
-          Domain.TaintAnalysisResult(testResults)
-      }
-    } finally {
-      if wholeProgram then cleanupWholeProgram(inputDir)
+    val rules = getRules("SecuribenchMicroJs").toList
+    initialize() match {
+      case Failure(exception) =>
+        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
+        TaintAnalysisResult()
+      case Success(_) =>
+        val inputDir = benchmarkBaseDir / s"securibench-micro.js-$version"
+        if wholeProgram then setupWholeProgram(inputDir)
+        try {
+          runScan(inputDir, "javascript", rules) match {
+            case Failure(exception) =>
+              logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
+              Domain.TaintAnalysisResult()
+            case Success(codeQlResults) =>
+              setResults(codeQlResults)
+              val testResults = getExpectedTestOutcomes
+                .map { case (testName, outcome) =>
+                  TestEntry(testName, compare(testName, outcome))
+                }
+                .toList
+                .sortBy(_.testName)
+              Domain.TaintAnalysisResult(testResults)
+          }
+        } finally {
+          if wholeProgram then cleanupWholeProgram(inputDir)
+        }
     }
+
   }
 
 }

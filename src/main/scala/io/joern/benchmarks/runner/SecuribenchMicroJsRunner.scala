@@ -15,7 +15,7 @@ abstract class SecuribenchMicroJsRunner(datasetDir: File, creatorLabel: String)
     with MultiFileDownloader {
 
   private val logger    = LoggerFactory.getLogger(getClass)
-  protected val version = "1.0.3"
+  protected val version = "1.0.4"
 
   override val benchmarkName = s"securibench-micro.js v$version $creatorLabel"
 

@@ -25,27 +25,33 @@ class SecuribenchMicroJsSemgrepRunner(datasetDir: File, wholeProgram: Boolean)
   }
 
   override def runIteration: Domain.BaseResult = {
-    val rules    = getRules("SecuribenchMicroJsRules")
-    val inputDir = benchmarkBaseDir / s"securibench-micro.js-$version"
-    if wholeProgram then setupWholeProgram(inputDir)
-    try {
-      runScan(inputDir, Seq.empty, rules) match {
-        case Failure(exception) =>
-          logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
-          Domain.TaintAnalysisResult()
-        case Success(semgrepResults) =>
-          setResults(semgrepResults)
-          val expectedTestOutcomes = getExpectedTestOutcomes
-          val testResults = expectedTestOutcomes
-            .map { case (testName, outcome) =>
-              TestEntry(testName, compare(testName, outcome))
-            }
-            .toList
-            .sortBy(_.testName)
-          Domain.TaintAnalysisResult(testResults)
-      }
-    } finally {
-      if wholeProgram then cleanupWholeProgram(inputDir)
+    val rules = getRules("SecuribenchMicroJsRules")
+    initialize() match {
+      case Failure(exception) =>
+        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
+        TaintAnalysisResult()
+      case Success(_) =>
+        val inputDir = benchmarkBaseDir / s"securibench-micro.js-$version"
+        if wholeProgram then setupWholeProgram(inputDir)
+        try {
+          runScan(inputDir, Seq.empty, rules) match {
+            case Failure(exception) =>
+              logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
+              Domain.TaintAnalysisResult()
+            case Success(semgrepResults) =>
+              setResults(semgrepResults)
+              val expectedTestOutcomes = getExpectedTestOutcomes
+              val testResults = expectedTestOutcomes
+                .map { case (testName, outcome) =>
+                  TestEntry(testName, compare(testName, outcome))
+                }
+                .toList
+                .sortBy(_.testName)
+              Domain.TaintAnalysisResult(testResults)
+          }
+        } finally {
+          if wholeProgram then cleanupWholeProgram(inputDir)
+        }
     }
   }
 

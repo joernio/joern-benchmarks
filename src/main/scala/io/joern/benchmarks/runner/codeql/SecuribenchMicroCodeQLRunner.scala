@@ -2,7 +2,7 @@ package io.joern.benchmarks.runner.codeql
 
 import better.files.File
 import io.joern.benchmarks.Domain
-import io.joern.benchmarks.Domain.TestEntry
+import io.joern.benchmarks.Domain.{TaintAnalysisResult, TestEntry}
 import io.joern.benchmarks.runner.{FindingInfo, SecuribenchMicroRunner}
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLSimpleResult
 
@@ -23,22 +23,30 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
 
   override def runIteration: Domain.BaseResult = {
     val rules = getRules("SecuribenchMicro").toList
-    if wholeProgram then {
-      (benchmarkBaseDir / "build.gradle").writeText(SecuribenchMicroCodeQLRunner.buildGradle)
-    }
-    runScan(benchmarkBaseDir, "java", rules, autobuild = wholeProgram) match {
+    initialize() match {
       case Failure(exception) =>
-        logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-        Domain.TaintAnalysisResult()
-      case Success(codeQlResults) =>
-        setResults(codeQlResults)
-        val testResults = getExpectedTestOutcomes
-          .map { case (testName, outcome) =>
-            TestEntry(testName, compare(testName, outcome))
-          }
-          .toList
-          .sortBy(_.testName)
-        Domain.TaintAnalysisResult(testResults)
+        logger.error(s"Unable to initialize benchmark '$getClass'", exception)
+        TaintAnalysisResult()
+      case Success(_) =>
+        if wholeProgram then {
+          (benchmarkBaseDir / "build.gradle")
+            .createFileIfNotExists()
+            .writeText(SecuribenchMicroCodeQLRunner.buildGradle)
+        }
+        runScan(benchmarkBaseDir, "java", rules, autobuild = wholeProgram) match {
+          case Failure(exception) =>
+            logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
+            Domain.TaintAnalysisResult()
+          case Success(codeQlResults) =>
+            setResults(codeQlResults)
+            val testResults = getExpectedTestOutcomes
+              .map { case (testName, outcome) =>
+                TestEntry(testName, compare(testName, outcome))
+              }
+              .toList
+              .sortBy(_.testName)
+            Domain.TaintAnalysisResult(testResults)
+        }
     }
   }
 
