@@ -55,7 +55,7 @@ object Benchmark {
       x =>
         new SecuribenchMicroJoernRunner(
           x.datasetDir,
-          JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth),
+          JavaSrcCpgCreator(x.disableSemantics, x.maxCallDepth, x.wholeProgram),
           x.wholeProgram
         )
     ),
@@ -64,7 +64,7 @@ object Benchmark {
       x =>
         new SecuribenchMicroJoernRunner(
           x.datasetDir,
-          JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth),
+          JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth, x.wholeProgram),
           x.wholeProgram
         )
     ),
@@ -91,7 +91,7 @@ object Benchmark {
     ),
     (
       AvailableBenchmarks.DEFECTS4J -> AvailableFrontends.JAVA,
-      x => new Defects4jJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth))
+      x => new Defects4jJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth, x.wholeProgram))
     ),
     // SEMGREP
     (

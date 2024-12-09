@@ -14,27 +14,32 @@ import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 
 import scala.util.Try
 
-sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
+sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]](wholeProgram: Boolean) extends CpgCreator {
 
-  override def extraSemantics: List[FlowSemantic] = DefaultSemantics.javaFlows ++ List(
-    F(
-      "javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1)",
-      (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil
-    ),
-    F("java.io.PrintWriter.println:void(java.lang.Object)", (0, 0) :: (1, 1) :: Nil),
-    F("java.util.LinkedList.addLast:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F("java.util.LinkedList.add:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F("java.util.LinkedList.addAll:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F("java.util.ArrayList.addLast:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F("java.util.ArrayList.add:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F("java.util.ArrayList.addAll:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
-    F(
-      "java.util.Map.put:java.lang.Object(java.lang.Object,java.lang.Object)",
-      (0, 0) :: (1, 1) :: (2, 2) :: (1, 0) :: (2, 0) :: (1, -1) :: (2, -1) :: Nil
-    ),
-    F("java.util.Map.get:java.lang.Object(java.lang.Object)", (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil),
-    F("java.util.ArrayList.get:java.lang.Object(int)", (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil)
-  )
+  override def extraSemantics: List[FlowSemantic] = {
+    val flows = DefaultSemantics.javaFlows ++ List(
+      F(
+        "javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1)",
+        (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil
+      ),
+      F("java.io.PrintWriter.println:void(java.lang.Object)", (0, 0) :: (1, 1) :: Nil),
+      F("java.util.LinkedList.addLast:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F("java.util.LinkedList.add:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F("java.util.LinkedList.addAll:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F("java.util.ArrayList.addLast:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F("java.util.ArrayList.add:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F("java.util.ArrayList.addAll:void(java.lang.Object)", (0, 0) :: (1, 1) :: (1, 0) :: Nil),
+      F(
+        "java.util.Map.put:java.lang.Object(java.lang.Object,java.lang.Object)",
+        (0, 0) :: (1, 1) :: (2, 2) :: (1, 0) :: (2, 0) :: (1, -1) :: (2, -1) :: Nil
+      ),
+      F("java.util.Map.get:java.lang.Object(java.lang.Object)", (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil),
+      F("java.util.ArrayList.get:java.lang.Object(int)", (0, 0) :: (1, 1) :: (1, -1) :: (0, -1) :: Nil)
+    )
+
+    if wholeProgram then flows.filter(_.methodFullName.startsWith("java."))
+    else flows
+  }
 
   protected def runJavaOverlays(
     cpg: Cpg,
@@ -48,8 +53,11 @@ sealed trait JavaCpgCreator[Frontend <: X2CpgFrontend[?]] extends CpgCreator {
 
 }
 
-class JavaSrcCpgCreator(override val disableSemantics: Boolean, override val maxCallDepth: Int)
-    extends JavaCpgCreator[JavaSrc2Cpg] {
+class JavaSrcCpgCreator(
+  override val disableSemantics: Boolean,
+  override val maxCallDepth: Int,
+  val wholeProgram: Boolean
+) extends JavaCpgCreator[JavaSrc2Cpg](wholeProgram) {
 
   override val frontend: String = Languages.JAVASRC
 
@@ -63,8 +71,8 @@ class JavaSrcCpgCreator(override val disableSemantics: Boolean, override val max
 
 }
 
-class JVMBytecodeCpgCreator(override val disableSemantics: Boolean, val maxCallDepth: Int)
-    extends JavaCpgCreator[Jimple2Cpg] {
+class JVMBytecodeCpgCreator(override val disableSemantics: Boolean, val maxCallDepth: Int, val wholeProgram: Boolean)
+    extends JavaCpgCreator[Jimple2Cpg](wholeProgram) {
 
   override val frontend: String = Languages.JAVA
 
