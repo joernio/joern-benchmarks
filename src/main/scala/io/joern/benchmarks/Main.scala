@@ -80,6 +80,9 @@ object Main {
         case _           => success
       }
       .action((x, c) => c.copy(iterations = x))
+    opt[Unit]('w', "whole-program")
+      .text("Enables whole program analysis. Off by default.")
+      .action((_, c) => c.copy(wholeProgram = true))
   }
 
 }

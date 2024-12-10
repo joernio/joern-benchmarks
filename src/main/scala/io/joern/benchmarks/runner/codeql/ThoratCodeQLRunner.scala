@@ -8,7 +8,7 @@ import io.joern.benchmarks.runner.{FindingInfo, ThoratPythonRunner}
 
 import scala.util.{Failure, Success}
 
-class ThoratCodeQLRunner(datasetDir: File)
+class ThoratCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
     extends ThoratPythonRunner(datasetDir, CodeQLBenchmarkRunner.CreatorLabel)
     with CodeQLBenchmarkRunner {
 
@@ -34,19 +34,25 @@ class ThoratCodeQLRunner(datasetDir: File)
   private def runThorat(): BaseResult = {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val rules                = getRules("Thorat").toList
-    runScan(benchmarkBaseDir / "tests", "python", rules) match {
-      case Failure(exception) =>
-        logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
-        Domain.TaintAnalysisResult()
-      case Success(codeQlResults) =>
-        setResults(codeQlResults)
-        val testResults = expectedTestOutcomes
-          .map { case (testName, outcome) =>
-            TestEntry(testName, compare(testName, outcome))
-          }
-          .toList
-          .sortBy(_.testName)
-        Domain.TaintAnalysisResult(testResults)
+    val inputDir             = benchmarkBaseDir / "tests"
+    if wholeProgram then setupWholeProgram(inputDir)
+    try {
+      runScan(inputDir, "python", rules) match {
+        case Failure(exception) =>
+          logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
+          Domain.TaintAnalysisResult()
+        case Success(codeQlResults) =>
+          setResults(codeQlResults)
+          val testResults = expectedTestOutcomes
+            .map { case (testName, outcome) =>
+              TestEntry(testName, compare(testName, outcome))
+            }
+            .toList
+            .sortBy(_.testName)
+          Domain.TaintAnalysisResult(testResults)
+      }
+    } finally {
+      if wholeProgram then cleanupWholeProgram(inputDir)
     }
   }
 }

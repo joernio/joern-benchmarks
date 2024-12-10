@@ -14,11 +14,13 @@ abstract class SecuribenchMicroJsRunner(datasetDir: File, creatorLabel: String)
     with TaintAnalysisRunner
     with MultiFileDownloader {
 
-  private val logger = LoggerFactory.getLogger(getClass)
+  private val logger    = LoggerFactory.getLogger(getClass)
+  protected val version = "1.0.4"
 
-  override val benchmarkName = s"securibench-micro.js v1.0.2 $creatorLabel"
+  override val benchmarkName = s"securibench-micro.js v$version $creatorLabel"
 
-  private val packageName = "securibench-micro-js"
+  private val packageName  = "securibench-micro-js"
+  protected val subDirName = s"securibench-micro.js-$version"
 
   override protected val benchmarkUrls: Map[String, URL] = Map(
     "securibench-micro-js" -> URI(s"$baseDatasetsUrl/$benchmarksVersion/$packageName.zip").toURL
@@ -51,13 +53,13 @@ abstract class SecuribenchMicroJsRunner(datasetDir: File, creatorLabel: String)
     val cwd           = File(benchmarkBaseDir.pathAsString).toJava
     val sinkLocations = mutable.Map.empty[String, Boolean]
 
-    runCmd(Seq("grep", "-rn", "'// BAD'", ".").mkString(" "), cwd) match {
+    runCmd(Seq("grep", "-rn", "'// BAD'", "--include=\"*.js\"", ".").mkString(" "), cwd) match {
       case RunOutput(0, stdOut, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, true) }
       case RunOutput(_, _, stdErr) =>
         logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
-    runCmd(Seq("grep", "-rn", "'// OK'", ".").mkString(" "), cwd) match {
+    runCmd(Seq("grep", "-rn", "'// OK'", "--include=\"*.js\"", ".").mkString(" "), cwd) match {
       case RunOutput(0, stdOut, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
       case RunOutput(_, _, stdErr) =>
@@ -65,6 +67,20 @@ abstract class SecuribenchMicroJsRunner(datasetDir: File, creatorLabel: String)
     }
 
     sinkLocations.toMap
+  }
+
+  private def nodeModulesDest(inputDir: File) = inputDir / "modules"
+
+  protected def setupWholeProgram(inputDir: File): Unit = {
+    (benchmarkBaseDir / subDirName / "node_modules.zip").unzipTo(inputDir, z => !z.getName.contains("MACOSX"))
+    val moduleDir   = nodeModulesDest(inputDir).delete(true).createDirectoryIfNotExists()
+    val nodeModules = inputDir / "node_modules"
+    nodeModules.list.foreach(_.moveToDirectory(moduleDir))
+    nodeModules.delete(true)
+  }
+
+  protected def cleanupWholeProgram(inputDir: File): Unit = {
+    nodeModulesDest(inputDir).delete(true)
   }
 
 }

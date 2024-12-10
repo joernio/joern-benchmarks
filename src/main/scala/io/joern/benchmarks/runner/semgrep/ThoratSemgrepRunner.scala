@@ -8,7 +8,7 @@ import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepTrace
 
 import scala.util.{Failure, Success}
 
-class ThoratSemgrepRunner(datasetDir: File)
+class ThoratSemgrepRunner(datasetDir: File, wholeProgram: Boolean)
     extends ThoratPythonRunner(datasetDir, SemgrepBenchmarkRunner.CreatorLabel)
     with SemgrepBenchmarkRunner {
 
@@ -36,19 +36,25 @@ class ThoratSemgrepRunner(datasetDir: File)
   private def runThorat(): TaintAnalysisResult = {
     val expectedTestOutcomes = getExpectedTestOutcomes
     val rules                = getRules("ThoratRules")
-    runScan(benchmarkBaseDir / "tests", Seq("--include=*.py"), rules) match {
-      case Failure(exception) =>
-        logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
-        Domain.TaintAnalysisResult()
-      case Success(semgrepResults) =>
-        setResults(semgrepResults)
-        val testResults = expectedTestOutcomes
-          .map { case (testName, outcome) =>
-            TestEntry(testName, compare(testName, outcome))
-          }
-          .toList
-          .sortBy(_.testName)
-        Domain.TaintAnalysisResult(testResults)
+    val inputDir             = benchmarkBaseDir / "tests"
+    if wholeProgram then setupWholeProgram(inputDir)
+    try {
+      runScan(inputDir, Seq("--include=*.py"), rules) match {
+        case Failure(exception) =>
+          logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
+          Domain.TaintAnalysisResult()
+        case Success(semgrepResults) =>
+          setResults(semgrepResults)
+          val testResults = expectedTestOutcomes
+            .map { case (testName, outcome) =>
+              TestEntry(testName, compare(testName, outcome))
+            }
+            .toList
+            .sortBy(_.testName)
+          Domain.TaintAnalysisResult(testResults)
+      }
+    } finally {
+      if wholeProgram then cleanupWholeProgram(inputDir)
     }
   }
 

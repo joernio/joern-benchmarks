@@ -14,8 +14,6 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
     with TaintAnalysisRunner
     with MultiFileDownloader {
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
   private val packageName    = "THORAT"
   override val benchmarkName = s"Thorat $creatorLabel"
 
@@ -31,7 +29,6 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
   }
 
   protected lazy val testMetaData: Map[String, TAF] = {
-    val testDir     = benchmarkBaseDir / "tests"
     val metaDataDir = benchmarkBaseDir / "tests_metadata"
     metaDataDir.list
       .filter(_.isDirectory)
@@ -42,7 +39,7 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
           .map { testMetaDataFile =>
             val testMetaData = read[TAF](ujson.Readable.fromFile(testMetaDataFile.toJava))
             val targetFile   = testDir / testName / testMetaData.fileName
-            targetFile.name -> testMetaData
+            s"${targetFile.parent.name}/${targetFile.name}" -> testMetaData
           }
       }
       .toMap
@@ -51,6 +48,22 @@ abstract class ThoratPythonRunner(datasetDir: File, creatorLabel: String)
   protected def getExpectedTestOutcomes: Map[String, Boolean] = {
     testMetaData.flatMap { case (filename, metaData) =>
       metaData.findings.map(f => s"$filename:${f.sink.lineNo}" -> !f.isNegative)
+    }
+  }
+
+  private val libs = List("blinker", "click", "flask", "itsdangerous", "jinja2", "markupsafe", "werkzeug")
+
+  protected def setupWholeProgram(inputDir: File): Unit = {
+    (benchmarkBaseDir / "lib.zip").unzipTo(inputDir)
+    libs.foreach { lib =>
+      (inputDir / "lib" / lib).moveToDirectory(inputDir)
+    }
+  }
+
+  protected def cleanupWholeProgram(inputDir: File): Unit = {
+    (inputDir / "lib").delete(true)
+    libs.foreach { lib =>
+      (inputDir / lib).delete(true)
     }
   }
 

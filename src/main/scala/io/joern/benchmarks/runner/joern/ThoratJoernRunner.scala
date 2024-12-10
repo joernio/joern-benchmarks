@@ -12,7 +12,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import scala.util.{Failure, Success, Using}
 
-class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
+class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?], wholeProgram: Boolean)
     extends ThoratPythonRunner(datasetDir, cpgCreator.frontend)
     with CpgBenchmarkRunner {
 
@@ -35,39 +35,42 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?])
     }
   }
 
-  private def runThorat(): BaseResult = recordTime(() => {
-    val expectedTestOutcomes = getExpectedTestOutcomes
-    val result = (benchmarkBaseDir / "tests").list
-      .filter(_.isDirectory)
-      .map { testDir =>
-        cpgCreator.createCpg(testDir, cpg => ThoratSourcesAndSinks(cpg)) match {
+  private def runThorat(): BaseResult = {
+    val inputDir = (benchmarkBaseDir / "src").delete(true).createDirectoryIfNotExists()
+    (benchmarkBaseDir / "tests").list.foreach(_.copyToDirectory(inputDir))
+    if wholeProgram then setupWholeProgram(inputDir)
+    try {
+      recordTime(() => {
+        val expectedTestOutcomes = getExpectedTestOutcomes
+        val result = cpgCreator.createCpg(inputDir, cpg => ThoratSourcesAndSinks(cpg)) match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
             TaintAnalysisResult()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
               setCpg(cpg)
-              val testName = testDir.name
-              // TODO: Check for negatives/excluded findings
-              val results = expectedTestOutcomes.collect {
-                case (testFullName, outcome) if testFullName.startsWith(testName) =>
-                  TestEntry(testFullName, compare(testFullName, outcome))
+              val results = expectedTestOutcomes.collect { case (testFullName, outcome) =>
+                TestEntry(testFullName, compare(testFullName, outcome))
               }.toList
               TaintAnalysisResult(results)
             }
         }
-      }
-      .foldLeft(TaintAnalysisResult())(_ ++ _)
-    val leftoverResults =
-      expectedTestOutcomes
-        .filter { case (name, outcome) => !result.entries.exists(x => name.startsWith(x.testName)) }
-        .map {
-          case (name, false) => TestEntry(name, TestOutcome.TN)
-          case (name, true)  => TestEntry(name, TestOutcome.FN)
-        }
-        .l
-    result.copy(entries = result.entries ++ leftoverResults)
-  })
+        val leftoverResults =
+          expectedTestOutcomes
+            .filter { case (name, outcome) => !result.entries.exists(x => name.startsWith(x.testName)) }
+            .map {
+              case (name, false) => TestEntry(name, TestOutcome.TN)
+              case (name, true)  => TestEntry(name, TestOutcome.FN)
+            }
+            .l
+        result.copy(entries = result.entries ++ leftoverResults)
+
+      })
+    } finally {
+      if wholeProgram then cleanupWholeProgram(inputDir)
+      inputDir.delete(true)
+    }
+  }
 
   class ThoratSourcesAndSinks(cpg: Cpg) extends BenchmarkSourcesAndSinks {
 
