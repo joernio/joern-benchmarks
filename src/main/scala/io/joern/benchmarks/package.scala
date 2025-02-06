@@ -21,7 +21,6 @@ package object benchmarks {
   implicit def toCfgTaggingExt[T <: StoredNode](traversal: Iterator[T]): TaggingExt[T] =
     new TaggingExt(traversal)
 
-  /** Example of custom node type starters */
   @TraversalSource
   class BenchmarkStarters(cpg: Cpg) {
 

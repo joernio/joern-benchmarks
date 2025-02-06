@@ -11,6 +11,8 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.mutable
+import scala.concurrent.duration.Duration
+import scala.concurrent.Await
 import scala.util.{Failure, Success}
 
 class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
@@ -20,12 +22,19 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
     val entries = mutable.ArrayBuffer.empty[PerfRun]
     packageNames.foreach { packageName =>
       val inputDir = benchmarkBaseDir / packageName
-      recordTime(() => cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg))) match {
-        case Failure(exception) =>
-          logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-        case Success(cpg) =>
-          if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
-          entries.addOne(PerfRun(packageName, getTimeSeconds))
+      val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
+      try {
+        recordTime(() => cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg))) match {
+          case Failure(exception) =>
+            logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
+          case Success(cpg) =>
+            MemoryMonitor.stopMeasuring()
+            val memoryResults = Await.result(memoryFuture, Duration.Inf)
+            if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
+            entries.addOne(PerfRun(packageName, getTimeSeconds, memoryResults.toList))
+        }
+      } finally {
+        MemoryMonitor.stopMeasuring() // in case of some failure
       }
     }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)

@@ -29,7 +29,7 @@ object Domain {
     }
   }
 
-  case class PerfRun(name: String, time: Double) derives ReadWriter
+  case class PerfRun(name: String, time: Double, memory: List[Long]) derives ReadWriter
 
   /** The result of a benchmark.
     */
