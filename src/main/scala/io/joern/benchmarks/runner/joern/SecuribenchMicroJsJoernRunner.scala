@@ -10,6 +10,8 @@ import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.*
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Using}
 
 class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?], wholeProgram: Boolean)
@@ -39,7 +41,14 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
     val inputDir = benchmarkBaseDir / subDirName
     if wholeProgram then setupWholeProgram(inputDir)
     try {
-      cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroJsSourcesAndSinks(cpg)) match {
+      val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
+      val result =
+        try {
+          cpgCreator.createCpg(inputDir, cpg => SecuribenchMicroJsSourcesAndSinks(cpg))
+        } finally {
+          MemoryMonitor.stopMeasuring()
+        }
+      result match {
         case Failure(exception) =>
           logger.error(s"Unable to generate CPG for $benchmarkName", exception)
           TaintAnalysisResult()
@@ -53,7 +62,7 @@ class SecuribenchMicroJsJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgC
               }
               .sortBy(_.testName)
               .l
-            TaintAnalysisResult(testResults)
+            TaintAnalysisResult(testResults, memory = Await.result(memoryFuture, Duration.Inf).toList)
           }
       }
     } finally {

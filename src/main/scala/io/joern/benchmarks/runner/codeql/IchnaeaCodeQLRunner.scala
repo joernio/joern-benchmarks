@@ -1,6 +1,7 @@
 package io.joern.benchmarks.runner.codeql
 
 import better.files.File
+import io.joern.benchmarks.runner.RunOutput
 import io.joern.benchmarks.Domain
 import io.joern.benchmarks.Domain.{BaseResult, TaintAnalysisResult, TestEntry}
 import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.CodeQLSimpleResult
@@ -36,9 +37,12 @@ class IchnaeaCodeQLRunner(datasetDir: File)
           case Failure(exception) =>
             logger.error(s"Error encountered while running `codeql` on $benchmarkName/$packageName", exception)
             TaintAnalysisResult()
-          case Success(semgrepResults) =>
-            setResults(semgrepResults)
-            TaintAnalysisResult(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
+          case Success((codeQlResults, memory)) =>
+            setResults(codeQlResults)
+            TaintAnalysisResult(
+              TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil,
+              memory = memory
+            )
         }
       }
       .foldLeft(TaintAnalysisResult())(_ ++ _)

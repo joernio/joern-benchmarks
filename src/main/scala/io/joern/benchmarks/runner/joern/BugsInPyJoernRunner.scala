@@ -21,21 +21,23 @@ class BugsInPyJoernRunner(datasetDir: File, cpgCreator: PySrcCpgCreator)
   override def runIteration: BaseResult = {
     val entries = mutable.ArrayBuffer.empty[PerfRun]
     packageNames.foreach { packageName =>
-      val inputDir = benchmarkBaseDir / packageName
+      val inputDir     = benchmarkBaseDir / packageName
       val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
-      try {
-        recordTime(() => cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg))) match {
-          case Failure(exception) =>
-            logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
-          case Success(cpg) =>
-            MemoryMonitor.stopMeasuring()
-            val memoryResults = Await.result(memoryFuture, Duration.Inf)
-            if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
-            entries.addOne(PerfRun(packageName, getTimeSeconds, memoryResults.toList))
+      recordTime(() =>
+        try {
+          cpgCreator.createCpg(inputDir, cpg => BugsInPySourcesAndSinks(cpg))
+        } finally {
+          MemoryMonitor.stopMeasuring() // in case of some failure
         }
-      } finally {
-        MemoryMonitor.stopMeasuring() // in case of some failure
+      ) match {
+        case Failure(exception) =>
+          logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
+        case Success(cpg) =>
+          val memoryResults = Await.result(memoryFuture, Duration.Inf).toList
+          if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
+          entries.addOne(PerfRun(packageName, getTimeSeconds, memoryResults))
       }
+
     }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)
   }

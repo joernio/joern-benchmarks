@@ -2,7 +2,7 @@ package io.joern.benchmarks.runner.semgrep
 
 import better.files.File
 import io.joern.benchmarks.runner.semgrep.SemgrepBenchmarkRunner.SemGrepFindings
-import io.joern.benchmarks.runner.{BenchmarkRunner, runCmd}
+import io.joern.benchmarks.runner.{BenchmarkRunner, RunOutput, runCmd}
 import upickle.default.*
 
 import scala.util.{Failure, Success, Try, Using}
@@ -26,7 +26,7 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
     inputDir: File,
     customCommands: Seq[String],
     customRuleFile: Option[File]
-  ): Try[SemGrepFindings] = recordTime(() => {
+  ): Try[(SemGrepFindings, List[Long])] = recordTime(() => {
     val customRulePath = customRuleFile match {
       case Some(f) => s"--config ${f.pathAsString}"
       case None    => ""
@@ -45,8 +45,8 @@ trait SemgrepBenchmarkRunner { this: BenchmarkRunner =>
       case Failure(exception) =>
         logger.error("Error encountered while executing SemGrep scan! Make sure `semgrep` is installed and logged in.")
         Failure(exception)
-      case Success(lines) =>
-        Try(read[SemGrepFindings](lines.mkString("\n")))
+      case Success(RunOutput(_, lines, _, memory)) =>
+        Try(read[SemGrepFindings](lines.mkString("\n")) -> memory)
     }
   })
 

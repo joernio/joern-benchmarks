@@ -41,7 +41,7 @@ class ThoratCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
         case Failure(exception) =>
           logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
           Domain.TaintAnalysisResult()
-        case Success(codeQlResults) =>
+        case Success((codeQlResults, memory)) =>
           setResults(codeQlResults)
           val testResults = expectedTestOutcomes
             .map { case (testName, outcome) =>
@@ -49,7 +49,7 @@ class ThoratCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
             }
             .toList
             .sortBy(_.testName)
-          Domain.TaintAnalysisResult(testResults)
+          Domain.TaintAnalysisResult(testResults, memory = memory)
       }
     } finally {
       if wholeProgram then cleanupWholeProgram(inputDir)

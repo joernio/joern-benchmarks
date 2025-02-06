@@ -13,6 +13,8 @@ import io.shiftleft.codepropertygraph.generated.language.*
 import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.immutable.List
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try, Using}
 
 class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
@@ -37,15 +39,25 @@ class IchnaeaJoernRunner(datasetDir: File, cpgCreator: JavaScriptCpgCreator[?])
     val outcomes = getExpectedTestOutcomes
     packageNames
       .map { packageName =>
-        val inputDir = benchmarkBaseDir / packageName / "package"
-        cpgCreator.createCpg(inputDir, cpg => IchnaeaSourcesAndSinks(cpg)) match {
+        val inputDir     = benchmarkBaseDir / packageName / "package"
+        val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
+        val result =
+          try {
+            cpgCreator.createCpg(inputDir, cpg => IchnaeaSourcesAndSinks(cpg))
+          } finally {
+            MemoryMonitor.stopMeasuring()
+          }
+        result match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
             TaintAnalysisResult()
           case Success(cpg) =>
             Using.resource(cpg) { cpg =>
               setCpg(cpg)
-              TaintAnalysisResult(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
+              TaintAnalysisResult(
+                TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil,
+                memory = Await.result(memoryFuture, Duration.Inf).toList
+              )
             }
         }
       }

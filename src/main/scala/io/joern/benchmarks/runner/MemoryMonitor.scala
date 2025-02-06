@@ -8,17 +8,16 @@ import java.lang.management.ManagementFactory
 import scala.sys.process.*
 import scala.collection.mutable.ArrayBuffer
 
-/**
- * A utility for measuring the memory usage of a process using the `ps` command.
- */
+/** A utility for measuring the memory usage of a process using the `ps` command.
+  */
 object MemoryMonitor {
-  
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  
-  private val measuring = java.util.concurrent.atomic.AtomicBoolean(false)
-  private val logger = LoggerFactory.getLogger(getClass)
 
-  private def getProcessMemoryUsage(pid: Int): Option[Long] = {
+  implicit val ec: ExecutionContext = ExecutionContext.global
+
+  private val measuring = java.util.concurrent.atomic.AtomicBoolean(false)
+  private val logger    = LoggerFactory.getLogger(getClass)
+
+  private def getProcessMemoryUsage(pid: Long): Option[Long] = {
     try {
       val output = Seq("ps", "-o", "rss=", "-p", pid.toString).!!.trim
       output.toLongOption.map(_ * 1024) // Convert from KB to bytes
@@ -29,17 +28,18 @@ object MemoryMonitor {
     }
   }
 
-  /**
-   * Stops the measuring process, allowing the last `Future` to terminate.
-   */
+  /** Stops the measuring process, allowing the last `Future` to terminate.
+    */
   def stopMeasuring(): Unit = measuring.set(false)
 
-  /**
-   * Begins measuring the memory of the process given by `pid`. Must use `stopMeasuring` to terminate the measuring thread.
-   * @param pid the process to measure
-   * @return a future holding the thread measuring memory. 
-   */
-  def monitorMemoryUsage(pid: Int): Future[ArrayBuffer[Long]] = {
+  /** Begins measuring the memory of the process given by `pid`. Must use `stopMeasuring` to terminate the measuring
+    * thread.
+    * @param pid
+    *   the process to measure
+    * @return
+    *   a future holding the thread measuring memory.
+    */
+  def monitorMemoryUsage(pid: Long): Future[ArrayBuffer[Long]] = {
     val memoryUsageData = ArrayBuffer[Long]()
     measuring.set(true)
 
@@ -52,8 +52,8 @@ object MemoryMonitor {
     }
   }
 
-  def getCurrentProcessId: Int = {
+  def getCurrentProcessId: Long = {
     val name = ManagementFactory.getRuntimeMXBean.getName
-    name.split('@').head.toInt
+    name.split('@').head.toLong
   }
 }

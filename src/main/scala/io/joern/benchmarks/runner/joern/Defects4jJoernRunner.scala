@@ -11,6 +11,8 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.mutable
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
 
 class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
@@ -19,13 +21,21 @@ class Defects4jJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?])
   override def runIteration: BaseResult = {
     val entries = mutable.ArrayBuffer.empty[PerfRun]
     packageNames.foreach { packageName =>
-      val inputDir = benchmarkBaseDir / packageName
-      recordTime(() => cpgCreator.createCpg(inputDir, cpg => Defects4jSourcesAndSinks(cpg))) match {
+      val inputDir     = benchmarkBaseDir / packageName
+      val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
+      recordTime(() =>
+        try {
+          cpgCreator.createCpg(inputDir, cpg => Defects4jSourcesAndSinks(cpg))
+        } finally {
+          MemoryMonitor.stopMeasuring()
+        }
+      ) match {
         case Failure(exception) =>
           logger.error(s"Unable to generate CPG for $benchmarkName/$packageName", exception)
         case Success(cpg) =>
+          val memoryResults = Await.result(memoryFuture, Duration.Inf).toList
           if (cpg.findings.isEmpty) logger.warn(s"No findings for $packageName!")
-          entries.addOne(PerfRun(packageName, getTimeSeconds))
+          entries.addOne(PerfRun(packageName, getTimeSeconds, memoryResults))
       }
     }
     PerformanceTestResult(entries.toList, k = cpgCreator.maxCallDepth)

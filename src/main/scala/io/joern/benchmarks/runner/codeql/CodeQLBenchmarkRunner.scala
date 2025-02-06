@@ -8,6 +8,7 @@ import io.joern.benchmarks.runner.codeql.CodeQLBenchmarkRunner.{
   CodeQLSimpleResult
 }
 import io.joern.benchmarks.runner.{BenchmarkRunner, runCmd}
+import io.joern.benchmarks.runner.RunOutput
 import upickle.default.*
 
 import scala.util.{Failure, Success, Try, Using}
@@ -83,7 +84,7 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
     language: String,
     queryFiles: List[File],
     autobuild: Boolean = false
-  ): Try[CodeQLSimpleFindings] = {
+  ): Try[(CodeQLSimpleFindings, List[Long])] = {
     initializeDatabase(inputDir, language, autobuild) match {
       case Failure(exception) => Failure(exception)
       case Success(databaseFile) =>
@@ -109,8 +110,8 @@ trait CodeQLBenchmarkRunner { this: BenchmarkRunner =>
                     "Error encountered while executing `codeql database analyze`! Make sure `semgrep` is installed and logged in."
                   )
                   Failure(exception)
-                case Success(_) =>
-                  Try(read[CodeQLFindings](tmpFile.path)).map(simplifyResults)
+                case Success(RunOutput(_, _, _, memory)) =>
+                  Try(read[CodeQLFindings](tmpFile.path)).map(x => simplifyResults(x) -> memory)
               }
             })
         }

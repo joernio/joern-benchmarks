@@ -26,7 +26,7 @@ class Benchmark(config: BenchmarkConfig) {
       val benchmarkName   = benchmarkRunner.benchmarkName
       logger.info(s"Running ${config.benchmark} using ${config.frontend}")
       benchmarkRunner.run(config.iterations) match {
-        case TaintAnalysisResult(Nil, _) => logger.warn(s"Empty results for $benchmarkName")
+        case TaintAnalysisResult(Nil, _, _) => logger.warn(s"Empty results for $benchmarkName")
         case result =>
           val targetOutputFile =
             config.outputDir / benchmarkName.replace(' ', '_') createDirectoryIfNotExists (createParents = true)
@@ -91,7 +91,11 @@ object Benchmark {
     ),
     (
       AvailableBenchmarks.DEFECTS4J -> AvailableFrontends.JAVA,
-      x => new Defects4jJoernRunner(x.datasetDir, JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth, x.wholeProgram))
+      x =>
+        new Defects4jJoernRunner(
+          x.datasetDir,
+          JVMBytecodeCpgCreator(x.disableSemantics, x.maxCallDepth, x.wholeProgram)
+        )
     ),
     // SEMGREP
     (

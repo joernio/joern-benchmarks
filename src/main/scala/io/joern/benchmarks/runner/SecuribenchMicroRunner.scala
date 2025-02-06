@@ -53,15 +53,15 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     val sinkLocations = mutable.Map.empty[String, Boolean]
 
     runCmd(Seq("grep", "-rn", "'/* BAD'", ".").mkString(" "), cwd) match {
-      case RunOutput(0, stdOut, _) =>
+      case RunOutput(0, stdOut, _, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, true) }
-      case RunOutput(_, _, stdErr) =>
+      case RunOutput(_, _, stdErr, _) =>
         logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
     runCmd(Seq("grep", "-rn", "'/* OK'", ".").mkString(" "), cwd) match {
-      case RunOutput(0, stdOut, _) =>
+      case RunOutput(0, stdOut, _, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
-      case RunOutput(_, _, stdErr) =>
+      case RunOutput(_, _, stdErr, _) =>
         logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
 

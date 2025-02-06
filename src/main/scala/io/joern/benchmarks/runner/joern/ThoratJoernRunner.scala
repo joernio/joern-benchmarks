@@ -10,6 +10,8 @@ import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{Call, CfgNode, Finding}
 import io.shiftleft.semanticcpg.language.*
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Using}
 
 class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?], wholeProgram: Boolean)
@@ -42,7 +44,15 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?], whole
     try {
       recordTime(() => {
         val expectedTestOutcomes = getExpectedTestOutcomes
-        val result = cpgCreator.createCpg(inputDir, cpg => ThoratSourcesAndSinks(cpg)) match {
+        val memoryFuture         = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)
+        val cpgResult =
+          try {
+            cpgCreator.createCpg(inputDir, cpg => ThoratSourcesAndSinks(cpg))
+          } finally {
+            MemoryMonitor.stopMeasuring()
+          }
+
+        val result = cpgResult match {
           case Failure(exception) =>
             logger.error(s"Unable to generate CPG for $benchmarkName benchmark")
             TaintAnalysisResult()
@@ -52,7 +62,7 @@ class ThoratJoernRunner(datasetDir: File, cpgCreator: PythonCpgCreator[?], whole
               val results = expectedTestOutcomes.collect { case (testFullName, outcome) =>
                 TestEntry(testFullName, compare(testFullName, outcome))
               }.toList
-              TaintAnalysisResult(results)
+              TaintAnalysisResult(results, memory = Await.result(memoryFuture, Duration.Inf).toList)
             }
         }
         val leftoverResults =
