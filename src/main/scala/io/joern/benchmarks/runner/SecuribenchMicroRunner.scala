@@ -52,13 +52,13 @@ abstract class SecuribenchMicroRunner(datasetDir: File, creatorLabel: String)
     val cwd           = File(benchmarkBaseDir.pathAsString).toJava
     val sinkLocations = mutable.Map.empty[String, Boolean]
 
-    runCmd(Seq("grep", "-rn", "'/* BAD'", ".").mkString(" "), cwd) match {
+    runCmd(Seq("grep", "-rn", "/* BAD", "."), cwd) match {
       case RunOutput(0, stdOut, _, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, true) }
       case RunOutput(_, _, stdErr, _) =>
         logger.error(s"Unable to 'grep' for tainted sinks in $cwd: ${stdErr.mkString("\n")}")
     }
-    runCmd(Seq("grep", "-rn", "'/* OK'", ".").mkString(" "), cwd) match {
+    runCmd(Seq("grep", "-rn", "/* OK", "."), cwd) match {
       case RunOutput(0, stdOut, _, _) =>
         stdOut.flatMap(splitLine).foreach { x => sinkLocations.put(x, false) }
       case RunOutput(_, _, stdErr, _) =>

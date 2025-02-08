@@ -7,8 +7,10 @@ import scala.util.{Failure, Success, Try}
 
 package object runner {
 
-  def runCmd(in: String, cwd: File): RunOutput = {
-    val processBuilder = new ProcessBuilder(in.split(" ")*)
+  def runCmd(in: String, cwd: File): RunOutput = runCmd(in.split(" "), cwd)
+
+  def runCmd(in: Seq[String], cwd: File): RunOutput = {
+    val processBuilder = new ProcessBuilder(in*)
       .directory(cwd)
       .redirectErrorStream(true)
 
@@ -40,7 +42,8 @@ package object runner {
       }
 
     val memory = Await.result(memoryFuture, Duration.Inf).toList
-    RunOutput(exitCode, out.toList, err.toList, memory)
+    if err.isEmpty then RunOutput(exitCode, out.toList, out.toList, memory)
+    else RunOutput(exitCode, out.toList, err.toList, memory)
   }
 
   case class RunOutput(exitCode: Int, stdOut: List[String], stdErr: List[String], memory: List[Long]) {
