@@ -7,7 +7,7 @@ import scala.util.{Failure, Success, Try}
 
 package object runner {
 
-  def runCmd(in: String, cwd: File): RunOutput = runCmd(in.split(" "), cwd)
+  def runCmd(in: String, cwd: File): RunOutput = runCmd(in.split(" ").toIndexedSeq, cwd)
 
   def runCmd(in: Seq[String], cwd: File): RunOutput = {
     val processBuilder = new ProcessBuilder(in*)
