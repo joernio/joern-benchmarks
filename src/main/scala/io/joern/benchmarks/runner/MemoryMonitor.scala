@@ -7,6 +7,7 @@ import scala.concurrent.duration.*
 import java.lang.management.ManagementFactory
 import scala.sys.process.*
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 /** A utility for measuring the memory usage of a process using the `ps` command.
   */
@@ -32,6 +33,19 @@ object MemoryMonitor {
     */
   def stopMeasuring(): Unit = measuring.set(false)
 
+  /** Determines if the given process is still alive.
+    * @param pid
+    *   the process ID.
+    * @return
+    *   true if alive, false if otherwise.
+    */
+  private def isProcessAlive(pid: Long): Boolean = {
+    Try {
+      val output = Seq("ps", "-p", pid.toString).!!.trim
+      output.linesIterator.drop(1).hasNext // Check if there's output beyond the header
+    }.getOrElse(false)
+  }
+
   /** Begins measuring the memory of the process given by `pid`. Must use `stopMeasuring` to terminate the measuring
     * thread.
     * @param pid
@@ -45,8 +59,12 @@ object MemoryMonitor {
 
     Future {
       while (measuring.get()) {
-        getProcessMemoryUsage(pid).foreach(memoryUsageData.append)
-        Thread.sleep(100) // Sleep for 0.1 second
+        if (isProcessAlive(pid)) {
+          getProcessMemoryUsage(pid).foreach(memoryUsageData.append)
+          Thread.sleep(100) // Sleep for 0.1 second
+        } else {
+          stopMeasuring()
+        }
       }
       memoryUsageData
     }
