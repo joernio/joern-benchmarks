@@ -40,9 +40,12 @@ class IchnaeaSemgrepRunner(datasetDir: File)
           case Failure(exception) =>
             logger.error(s"Error encountered while running `semgrep` on $benchmarkName/$packageName", exception)
             TaintAnalysisResult()
-          case Success(semgrepResults) =>
+          case Success((semgrepResults, memory)) =>
             setResults(semgrepResults)
-            TaintAnalysisResult(TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil)
+            TaintAnalysisResult(
+              TestEntry(packageName, compare(packageName, outcomes(packageName))) :: Nil,
+              memory = memory
+            )
         }
       }
       .foldLeft(TaintAnalysisResult())(_ ++ _)

@@ -29,7 +29,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
       case Failure(exception) =>
         logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
         Domain.TaintAnalysisResult()
-      case Success(semgrepResults) =>
+      case Success((semgrepResults, memory)) =>
         setResults(semgrepResults)
         val expectedTestOutcomes = getExpectedTestOutcomes
         val testResults = expectedTestOutcomes
@@ -38,7 +38,7 @@ class SecuribenchMicroSemgrepRunner(datasetDir: File)
           }
           .toList
           .sortBy(_.testName)
-        Domain.TaintAnalysisResult(testResults)
+        Domain.TaintAnalysisResult(testResults, memory = memory)
     }
   }
 

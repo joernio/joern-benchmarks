@@ -37,7 +37,7 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
           case Failure(exception) =>
             logger.error(s"Error encountered while running `codeql` on $benchmarkName", exception)
             Domain.TaintAnalysisResult()
-          case Success(codeQlResults) =>
+          case Success((codeQlResults, memory)) =>
             setResults(codeQlResults)
             val testResults = getExpectedTestOutcomes
               .map { case (testName, outcome) =>
@@ -45,7 +45,7 @@ class SecuribenchMicroCodeQLRunner(datasetDir: File, wholeProgram: Boolean)
               }
               .toList
               .sortBy(_.testName)
-            Domain.TaintAnalysisResult(testResults)
+            Domain.TaintAnalysisResult(testResults, memory = memory)
         }
     }
   }

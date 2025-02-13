@@ -8,6 +8,25 @@ object Domain {
 
   sealed trait BaseResult
 
+  private def mean[B](arr: Seq[B])(implicit num: Numeric[B]): Double = {
+    if (arr.nonEmpty) {
+      num.toDouble(arr.sum) / arr.size
+    } else {
+      0.0
+    }
+  }
+
+  private def stderr[B](arr: Seq[B], mean: Double)(implicit num: Numeric[B]): Double = {
+    val iterations = arr.size
+    if (arr.nonEmpty) {
+      val variance          = arr.map(t => math.pow(num.toDouble(t) - mean, 2)).sum / (iterations - 1)
+      val standardDeviation = math.sqrt(variance)
+      standardDeviation / math.sqrt(iterations)
+    } else {
+      0.0
+    }
+  }
+
   implicit val resultRw: ReadWriter[TaintAnalysisResult] =
     readwriter[ujson.Value].bimap[TaintAnalysisResult](
       x =>
@@ -29,11 +48,16 @@ object Domain {
     }
   }
 
-  case class PerfRun(name: String, time: Double) derives ReadWriter
+  case class PerfRun(name: String, time: Double, memory: List[Long]) derives ReadWriter {
+    def meanMem: Double = mean(memory)
+
+    def stderrMem: Double = stderr(memory, meanMem)
+  }
 
   /** The result of a benchmark.
     */
-  case class TaintAnalysisResult(entries: List[TestEntry] = Nil, times: List[Double] = Nil) extends BaseResult {
+  case class TaintAnalysisResult(entries: List[TestEntry] = Nil, times: List[Double] = Nil, memory: List[Long] = Nil)
+      extends BaseResult {
 
     /** @return
       *   When a benchmark tests for false/true positives/negatives, this will be the <a
@@ -62,25 +86,13 @@ object Domain {
     def tn: Double = entries.count(_.outcome == TestOutcome.TN).toDouble
     def fn: Double = entries.count(_.outcome == TestOutcome.FN).toDouble
 
-    def meanTime: Double = {
-      if (times.nonEmpty) {
-        times.sum / times.size
-      } else {
-        0.0
-      }
-    }
+    def meanTime: Double = mean(times)
 
-    def stderrTime: Double = {
-      val iterations = times.size
-      if (times.nonEmpty) {
-        val average           = meanTime
-        val variance          = times.map(t => math.pow(t - average, 2)).sum / (iterations - 1)
-        val standardDeviation = math.sqrt(variance)
-        standardDeviation / math.sqrt(iterations)
-      } else {
-        0.0
-      }
-    }
+    def stderrTime: Double = stderr(times, meanTime)
+
+    def meanMem: Double = mean(memory)
+
+    def stderrMem: Double = stderr(memory, meanMem)
 
     @targetName("appendAll")
     def ++(o: TaintAnalysisResult): TaintAnalysisResult = {

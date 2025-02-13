@@ -43,7 +43,7 @@ class ThoratSemgrepRunner(datasetDir: File, wholeProgram: Boolean)
         case Failure(exception) =>
           logger.error(s"Error encountered while running `semgrep` on $benchmarkName", exception)
           Domain.TaintAnalysisResult()
-        case Success(semgrepResults) =>
+        case Success((semgrepResults, memory)) =>
           setResults(semgrepResults)
           val testResults = expectedTestOutcomes
             .map { case (testName, outcome) =>
@@ -51,7 +51,7 @@ class ThoratSemgrepRunner(datasetDir: File, wholeProgram: Boolean)
             }
             .toList
             .sortBy(_.testName)
-          Domain.TaintAnalysisResult(testResults)
+          Domain.TaintAnalysisResult(testResults, memory = memory)
       }
     } finally {
       if wholeProgram then cleanupWholeProgram(inputDir)
