@@ -19,13 +19,31 @@ object MemoryMonitor {
   private val logger    = LoggerFactory.getLogger(getClass)
 
   private def getProcessMemoryUsage(pid: Long): Option[Long] = {
-    try {
-      val output = Seq("ps", "-o", "rss=", "-p", pid.toString).!!.trim
-      output.toLongOption.map(_ * 1024) // Convert from KB to bytes
-    } catch {
-      case x: Throwable =>
-        logger.error("Unable to measure memory at current epoch", x)
-        None
+    def getMemoryForPid(pid: Long): Option[Long] = {
+      try {
+        val output = Seq("ps", "-o", "rss=", "-p", pid.toString).!!.trim
+        output.toLongOption.map(_ * 1024) // Convert KB to bytes
+      } catch {
+        case x: Throwable =>
+          logger.error("Unable to measure memory at current epoch", x)
+          None
+      }
+    }
+
+    def getChildPids(parentPid: Long): Seq[Long] = {
+      try {
+        val output = Seq("pgrep", "-P", parentPid.toString).!!.trim
+        output.split("\\s+").flatMap(_.toLongOption)
+      } catch {
+        case x: Throwable =>
+          logger.error("Unable to measure memory for child processes at current epoch", x)
+          Seq.empty
+      }
+    }
+
+    getMemoryForPid(pid) match {
+      case None         => None
+      case Some(pidMem) => Option(pidMem + getChildPids(pid).flatMap(getMemoryForPid).sum)
     }
   }
 
