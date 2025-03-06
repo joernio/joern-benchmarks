@@ -43,7 +43,9 @@ class SecuribenchMicroJoernRunner(datasetDir: File, cpgCreator: JavaCpgCreator[?
       case _: JavaSrcCpgCreator     => benchmarkBaseDir / "src"
     }
     if wholeProgram then {
-      (benchmarkBaseDir / "lib").list.foreach(l => l.copyToDirectory(inputDir))
+      (benchmarkBaseDir / "lib").list.foreach(l =>
+        l.copyToDirectory(inputDir)(copyOptions = File.CopyOptions(overwrite = true))
+      )
     }
     try {
       val memoryFuture = MemoryMonitor.monitorMemoryUsage(MemoryMonitor.getCurrentProcessId)

@@ -35,7 +35,10 @@ object MemoryMonitor {
         val output = Seq("pgrep", "-P", parentPid.toString).!!.trim
         output.split("\\s+").flatMap(_.toLongOption)
       } catch {
-        case x: Throwable =>
+        case x: RuntimeException if x.getMessage.contains("Nonzero exit value: 1") =>
+          logger.debug("Unable to measure memory for child processes at current epoch, likely no child processes exist")
+          Seq.empty
+        case x: RuntimeException =>
           logger.error("Unable to measure memory for child processes at current epoch", x)
           Seq.empty
       }
